@@ -40,22 +40,35 @@ public class Driver implements bank.BankDriver {
 
 		@Override
 		public Set<String> getAccountNumbers() {
-			System.out.println("Bank.getAccountNumbers has to be implemented");
-			return new HashSet<String>(); // TODO has to be replaced
+			HashSet<String> accountNumbers = new HashSet<String>();
+			for (String number : accounts.keySet()) { // iterates over keys
+				if (accounts.get(number).isActive()) { // only add when active
+					accountNumbers.add(number); 
+				}
+			}
+			return accountNumbers;
 		}
 
 		@Override
 		public String createAccount(String owner) {
 			Account account = new Account(owner);
 			accounts.put(account.getNumber(), account);
-			return account.getNumber();
+			if (account.isActive()) {
+				return account.getNumber();
+			} else {
+				return null; // account could not be created
+			}
 		}
 
 		@Override
 		public boolean closeAccount(String number) {
-			// TODO has to be implemented
-			System.out.println("Bank.closeAccount has to be implemented");
-			return false;
+			Account acc = accounts.get(number);
+			if (acc.isActive() && acc.getBalance() == 0) {
+				acc.setActive(false);
+				return true; // account is closed
+			} else {
+				return false; // account is not closed
+			}
 		}
 
 		@Override
@@ -65,9 +78,19 @@ public class Driver implements bank.BankDriver {
 
 		@Override
 		public void transfer(bank.Account from, bank.Account to, double amount)
-				throws IOException, InactiveException, OverdrawException {
-			// TODO has to be implemented
-			System.out.println("Bank.transfer has to be implemented");
+				throws IOException, InactiveException, OverdrawException, 
+				IllegalArgumentException {
+			if (!from.isActive() || !to.isActive()) {
+				throw new InactiveException();
+			}
+			if (amount > from.getBalance()) {
+				throw new OverdrawException();
+			}
+			if (amount < 0) {
+				throw new IllegalArgumentException();
+			}
+			from.withdraw(amount);
+			to.deposit(amount);
 		}
 
 	}
@@ -79,18 +102,23 @@ public class Driver implements bank.BankDriver {
 		private boolean active = true;
 		
 		private static int lastGeneratedNumber = 0;
+		
+		// number generation values
+		private final int accountNumberLength = 7;
+		private final int dashPosition = 3;
 
 		Account(String owner) {
 			this.owner = owner;
 
-			// build account number
+			// build account number, 000-0000 style
 			String strNumber = Integer.toString(++lastGeneratedNumber);
 			StringBuilder sb = new StringBuilder();
-			int zeros = 8 - strNumber.length(); // for formatting 00000000-style
-			for (int i = 0; i < strNumber.length(); i++) {
+			int zeros = accountNumberLength - strNumber.length();
+			for (int i = 0; i < zeros; i++) {
 				sb.append('0');
 			}
 			sb.append(strNumber);
+			sb.insert(dashPosition, '-');
 
 			number = sb.toString();
 		}
@@ -120,6 +148,9 @@ public class Driver implements bank.BankDriver {
 			if (!active) {
 				throw new InactiveException();
 			}
+			if (amount < 0) {
+				throw new IllegalArgumentException();
+			}
 			balance += amount;
 		}
 
@@ -132,6 +163,10 @@ public class Driver implements bank.BankDriver {
 				throw new OverdrawException();
 			}
 			balance -= amount;
+		}
+		
+		public void setActive(boolean active) {
+			this.active = active;
 		}
 
 	}
