@@ -46,9 +46,9 @@ public class Driver implements bank.BankDriver {
 
 		@Override
 		public String createAccount(String owner) {
-			// TODO has to be implemented
-			System.out.println("Bank.createAccount has to be implemented");
-			return null;
+			Account account = new Account(owner);
+			accounts.put(account.getNumber(), account);
+			return account.getNumber();
 		}
 
 		@Override
@@ -77,10 +77,22 @@ public class Driver implements bank.BankDriver {
 		private String owner;
 		private double balance;
 		private boolean active = true;
+		
+		private static int lastGeneratedNumber = 0;
 
 		Account(String owner) {
 			this.owner = owner;
-			// TODO account number has to be set here or has to be passed using the constructor
+
+			// build account number
+			String strNumber = Integer.toString(++lastGeneratedNumber);
+			StringBuilder sb = new StringBuilder();
+			int zeros = 8 - strNumber.length(); // for formatting 00000000-style
+			for (int i = 0; i < strNumber.length(); i++) {
+				sb.append('0');
+			}
+			sb.append(strNumber);
+
+			number = sb.toString();
 		}
 
 		@Override
@@ -105,14 +117,21 @@ public class Driver implements bank.BankDriver {
 
 		@Override
 		public void deposit(double amount) throws InactiveException {
-			// TODO has to be implemented
-			System.out.println("Account.deposit has to be implemented");
+			if (!active) {
+				throw new InactiveException();
+			}
+			balance += amount;
 		}
 
 		@Override
 		public void withdraw(double amount) throws InactiveException, OverdrawException {
-			// TODO has to be implemented
-			System.out.println("Account.withdraw has to be implemented");
+			if (!active) {
+				throw new InactiveException();
+			}
+			if (amount > balance) {
+				throw new OverdrawException();
+			}
+			balance -= amount;
 		}
 
 	}
