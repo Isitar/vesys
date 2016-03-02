@@ -50,7 +50,9 @@ public class Driver implements bank.BankDriver {
 				}
 			}
 			*/
+			
 			accounts.values().forEach(a -> accountNumbers.add(a.getNumber()));
+			//palu.end
 			return accountNumbers;
 		}
 
