@@ -41,11 +41,16 @@ public class Driver implements bank.BankDriver {
 		@Override
 		public Set<String> getAccountNumbers() {
 			HashSet<String> accountNumbers = new HashSet<String>();
+			//palu.begin
+			// ORIG
+			/*
 			for (String number : accounts.keySet()) { // iterates over keys
 				if (accounts.get(number).isActive()) { // only add when active
 					accountNumbers.add(number); 
 				}
 			}
+			*/
+			accounts.values().forEach(a -> accountNumbers.add(a.getNumber()));
 			return accountNumbers;
 		}
 
