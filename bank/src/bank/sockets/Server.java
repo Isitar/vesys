@@ -49,10 +49,10 @@ class BankHandler implements Runnable {
 				if (obj instanceof Command) {
 					Command c = (Command) obj;
 					switch (c.getCommand()) {
-					case "create":
+					case "createAccount":
 						c.setReturnObject(b.createAccount((String) c.getAssignedObject()));
 						break;
-					case "close":
+					case "closeAccount":
 						c.setReturnObject(b.closeAccount((String) c.getAssignedObject()));
 						break;
 					case "getAccount":
@@ -67,6 +67,9 @@ class BankHandler implements Runnable {
 							c.setError(e.getMessage());
 							c.setReturnObject(e);
 						}
+						break;
+					case "getAccountNumbers":
+						c.setReturnObject(b.getAccountNumbers());
 						break;
 					}
 

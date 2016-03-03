@@ -6,6 +6,9 @@
 package bank.sockets;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -18,8 +21,8 @@ public class Driver implements bank.BankDriver {
 	private Bank bank = null;
 
 	@Override
-	public void connect(String[] args) {
-		bank = new Bank();
+	public void connect(String[] args) throws NumberFormatException, IOException {
+		bank = new Bank(args[0], Integer.parseInt(args[1]));
 		System.out.println("connected...");
 	}
 
@@ -35,69 +38,57 @@ public class Driver implements bank.BankDriver {
 	}
 
 	static class Bank implements bank.Bank {
-
+		private Socket s;
 		private final Map<String, Account> accounts = new HashMap<>();
 
-		@Override
-		public Set<String> getAccountNumbers() {
-			HashSet<String> accountNumbers = new HashSet<String>();
-			//palu.begin
-			// ORIG
-			/*
-			for (String number : accounts.keySet()) { // iterates over keys
-				if (accounts.get(number).isActive()) { // only add when active
-					accountNumbers.add(number); 
-				}
-			}
-			*/
-			
-			accounts.values().forEach(a -> accountNumbers.add(a.getNumber()));
-			//palu.end
-			return accountNumbers;
+		public Bank(String host, int port) throws IOException {
+			s = new Socket(host, port, null, 0);
 		}
 
 		@Override
-		public String createAccount(String owner) {
-			Account account = new Account(owner);
-			accounts.put(account.getNumber(), account);
-			if (account.isActive()) {
-				return account.getNumber();
-			} else {
-				return null; // account could not be created
-			}
+		public Set<String> getAccountNumbers() throws IOException {
+			return (Set<String>) tcpRequest(null, "getAccountNumbers");
 		}
 
 		@Override
-		public boolean closeAccount(String number) {
-			Account acc = accounts.get(number);
-			if (acc.isActive() && acc.getBalance() == 0) {
-				acc.setActive(false);
-				return true; // account is closed
-			} else {
-				return false; // account is not closed
-			}
+		public String createAccount(String owner) throws IOException {
+			return (String) tcpRequest(owner, "createAccount");
 		}
 
 		@Override
-		public bank.Account getAccount(String number) {
-			return accounts.get(number);
+		public boolean closeAccount(String number) throws IOException {
+			return (boolean) tcpRequest(number, "closeAccount");
+		}
+
+		@Override
+		public bank.Account getAccount(String number) throws IOException {
+			return (bank.Account) tcpRequest(number, "getAccount");
 		}
 
 		@Override
 		public void transfer(bank.Account from, bank.Account to, double amount)
-				throws IOException, InactiveException, OverdrawException, 
-				IllegalArgumentException {
-			if (!from.isActive() || !to.isActive()) {
-				throw new InactiveException();
+				throws IOException, InactiveException, OverdrawException, IllegalArgumentException {
+			TransferCommand tc = new TransferCommand();
+			tc.setAcc1(from);
+			tc.setAcc2(to);
+			tc.setAmount(amount);
+			tcpRequest(tc, "transfer");
+
+		}
+
+		private Object tcpRequest(Object o, String command) throws IOException {
+			ObjectOutputStream os = new ObjectOutputStream(s.getOutputStream());
+			Command c = new Command();
+			c.setCommand(command);
+			c.setAssignedObject(o);
+			try {
+				os.writeObject(c);
+				ObjectInputStream is = new ObjectInputStream(s.getInputStream());
+				c = (Command) is.readObject();
+				return c.getReturnObject();
+			} catch (IOException | ClassNotFoundException e) {
+				return null;
 			}
-			if (amount > from.getBalance()) {
-				throw new OverdrawException();
-			}
-			if (amount < 0) {
-				throw new IllegalArgumentException();
-			}
-			from.withdraw(amount);
-			to.deposit(amount);
 		}
 
 	}
@@ -107,9 +98,9 @@ public class Driver implements bank.BankDriver {
 		private String owner;
 		private double balance;
 		private boolean active = true;
-		
+
 		private static int lastGeneratedNumber = 0;
-		
+
 		// number generation values
 		private final int accountNumberLength = 7;
 		private final int dashPosition = 3;
@@ -171,7 +162,7 @@ public class Driver implements bank.BankDriver {
 			}
 			balance -= amount;
 		}
-		
+
 		public void setActive(boolean active) {
 			this.active = active;
 		}
