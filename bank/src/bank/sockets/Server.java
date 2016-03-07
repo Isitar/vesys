@@ -41,6 +41,7 @@ class BankHandler implements Runnable {
 	public void run() {
 		System.out.println("connection from " + s);
 		try {
+			ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
 			ObjectInputStream in = new ObjectInputStream(s.getInputStream());
 
 			while (s.isConnected()) {
@@ -72,8 +73,6 @@ class BankHandler implements Runnable {
 						c.setReturnObject(b.getAccountNumbers());
 						break;
 					}
-
-					ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
 					out.writeObject(c);
 				}
 			}

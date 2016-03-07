@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import bank.Account;
 import bank.InactiveException;
 import bank.OverdrawException;
 
@@ -39,10 +40,15 @@ public class Driver implements bank.BankDriver {
 
 	static class Bank implements bank.Bank {
 		private Socket s;
+		private ObjectOutputStream os;
+		private ObjectInputStream is;
+
 		private final Map<String, Account> accounts = new HashMap<>();
 
 		public Bank(String host, int port) throws IOException {
 			s = new Socket(host, port, null, 0);
+			os = new ObjectOutputStream(s.getOutputStream());
+			is = new ObjectInputStream(s.getInputStream());
 		}
 
 		@Override
@@ -77,13 +83,13 @@ public class Driver implements bank.BankDriver {
 		}
 
 		private Object tcpRequest(Object o, String command) throws IOException {
-			ObjectOutputStream os = new ObjectOutputStream(s.getOutputStream());
+
 			Command c = new Command();
 			c.setCommand(command);
 			c.setAssignedObject(o);
 			try {
 				os.writeObject(c);
-				ObjectInputStream is = new ObjectInputStream(s.getInputStream());
+
 				c = (Command) is.readObject();
 				return c.getReturnObject();
 			} catch (IOException | ClassNotFoundException e) {
@@ -92,7 +98,7 @@ public class Driver implements bank.BankDriver {
 		}
 
 	}
-
+/*
 	static class Account implements bank.Account {
 		private String number;
 		private String owner;
@@ -168,5 +174,5 @@ public class Driver implements bank.BankDriver {
 		}
 
 	}
-
+*/
 }

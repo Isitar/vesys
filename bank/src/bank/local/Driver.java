@@ -41,18 +41,16 @@ public class Driver implements bank.BankDriver {
 		@Override
 		public Set<String> getAccountNumbers() {
 			HashSet<String> accountNumbers = new HashSet<String>();
-			//palu.begin
+			// palu.begin
 			// ORIG
 			/*
-			for (String number : accounts.keySet()) { // iterates over keys
-				if (accounts.get(number).isActive()) { // only add when active
-					accountNumbers.add(number); 
-				}
-			}
-			*/
-			
+			 * for (String number : accounts.keySet()) { // iterates over keys
+			 * if (accounts.get(number).isActive()) { // only add when active
+			 * accountNumbers.add(number); } }
+			 */
+
 			accounts.values().forEach(a -> accountNumbers.add(a.getNumber()));
-			//palu.end
+			// palu.end
 			return accountNumbers;
 		}
 
@@ -85,8 +83,7 @@ public class Driver implements bank.BankDriver {
 
 		@Override
 		public void transfer(bank.Account from, bank.Account to, double amount)
-				throws IOException, InactiveException, OverdrawException, 
-				IllegalArgumentException {
+				throws IOException, InactiveException, OverdrawException, IllegalArgumentException {
 			if (!from.isActive() || !to.isActive()) {
 				throw new InactiveException();
 			}
@@ -102,14 +99,18 @@ public class Driver implements bank.BankDriver {
 
 	}
 
-	static class Account implements bank.Account {
+	static class Account implements bank.Account, java.io.Serializable {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -4470185434146804658L;
 		private String number;
 		private String owner;
 		private double balance;
 		private boolean active = true;
-		
+
 		private static int lastGeneratedNumber = 0;
-		
+
 		// number generation values
 		private final int accountNumberLength = 7;
 		private final int dashPosition = 3;
@@ -171,7 +172,7 @@ public class Driver implements bank.BankDriver {
 			}
 			balance -= amount;
 		}
-		
+
 		public void setActive(boolean active) {
 			this.active = active;
 		}
