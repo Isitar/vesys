@@ -43,14 +43,13 @@ public class Driver implements bank.BankDriver {
 		private ObjectOutputStream os;
 		private ObjectInputStream is;
 
-		private final Map<String, Account> accounts = new HashMap<>();
-
 		public Bank(String host, int port) throws IOException {
 			s = new Socket(host, port, null, 0);
 			os = new ObjectOutputStream(s.getOutputStream());
 			is = new ObjectInputStream(s.getInputStream());
 		}
 
+		@SuppressWarnings("unchecked")
 		@Override
 		public Set<String> getAccountNumbers() throws IOException {
 			return (Set<String>) tcpRequest(null, "getAccountNumbers");
@@ -68,7 +67,13 @@ public class Driver implements bank.BankDriver {
 
 		@Override
 		public bank.Account getAccount(String number) throws IOException {
-			return (bank.Account) tcpRequest(number, "getAccount");
+			bank.Account acc = (bank.Account) tcpRequest(number, "getAccount");
+			Driver.Account a = new Driver.Account(os, is);
+			a.active = acc.isActive();
+			a.balance = acc.getBalance();
+			a.number = acc.getNumber();
+			a.owner = acc.getOwner();
+			return a;
 		}
 
 		@Override
@@ -83,48 +88,43 @@ public class Driver implements bank.BankDriver {
 		}
 
 		private Object tcpRequest(Object o, String command) throws IOException {
+			return Helper.tcpRequest(o, command, os, is);
+		}
+	}
+
+	static class Helper {
+		public static Object tcpRequest(Object o, String command, ObjectOutputStream os, ObjectInputStream is)
+				throws IOException {
 
 			Command c = new Command();
 			c.setCommand(command);
 			c.setAssignedObject(o);
 			try {
 				os.writeObject(c);
-
 				c = (Command) is.readObject();
 				return c.getReturnObject();
-			} catch (IOException | ClassNotFoundException e) {
+			} catch (ClassNotFoundException e) {
 				return null;
 			}
 		}
-
 	}
-/*
-	static class Account implements bank.Account {
+
+	static class Account implements bank.Account, java.io.Serializable {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 103983981303735184L;
 		private String number;
 		private String owner;
 		private double balance;
 		private boolean active = true;
 
-		private static int lastGeneratedNumber = 0;
+		private ObjectOutputStream os;
+		private ObjectInputStream is;
 
-		// number generation values
-		private final int accountNumberLength = 7;
-		private final int dashPosition = 3;
-
-		Account(String owner) {
-			this.owner = owner;
-
-			// build account number, 000-0000 style
-			String strNumber = Integer.toString(++lastGeneratedNumber);
-			StringBuilder sb = new StringBuilder();
-			int zeros = accountNumberLength - strNumber.length();
-			for (int i = 0; i < zeros; i++) {
-				sb.append('0');
-			}
-			sb.append(strNumber);
-			sb.insert(dashPosition, '-');
-
-			number = sb.toString();
+		public Account(ObjectOutputStream os, ObjectInputStream is) {
+			this.os = os;
+			this.is = is;
 		}
 
 		@Override
@@ -148,31 +148,46 @@ public class Driver implements bank.BankDriver {
 		}
 
 		@Override
-		public void deposit(double amount) throws InactiveException {
+		public void deposit(double amount) throws InactiveException, IOException {
 			if (!active) {
 				throw new InactiveException();
 			}
 			if (amount < 0) {
 				throw new IllegalArgumentException();
 			}
-			balance += amount;
+			DepositCommand dc = new DepositCommand();
+			dc.setAccountNo(this.number);
+			dc.setAmount(amount);
+			tcpRequest(dc, "deposit");
+			this.balance += amount;
 		}
 
 		@Override
-		public void withdraw(double amount) throws InactiveException, OverdrawException {
+		public void withdraw(double amount) throws InactiveException, OverdrawException, IOException {
 			if (!active) {
 				throw new InactiveException();
 			}
 			if (amount > balance) {
 				throw new OverdrawException();
 			}
+			WithdrawCommand wc = new WithdrawCommand();
+			wc.setAccountNo(this.number);
+			wc.setAmount(amount);
+			Command com = (Command) tcpRequest(wc, "withdraw");
 			balance -= amount;
 		}
 
-		public void setActive(boolean active) {
+		public void setActive(boolean active) throws IOException {
+			if (active)
+				tcpRequest(this.number, "activate");
+			else
+				tcpRequest(this.number, "deactivate");
 			this.active = active;
 		}
 
+		private Object tcpRequest(Object o, String command) throws IOException {
+			return Helper.tcpRequest(o, command, os, is);
+		}
 	}
-*/
+
 }

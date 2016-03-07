@@ -12,16 +12,18 @@ import bank.OverdrawException;
 import bank.local.Driver;
 
 public class Server {
+	private static Bank b;
 
 	public static void main(String[] args) throws IOException {
 		Driver localDriver = new Driver();
 		localDriver.connect(new String[] { "" });
 		int port = 6789;
+		b = localDriver.getBank();
 		try (ServerSocket server = new ServerSocket(port)) {
 			System.out.println("Startet Bank Server on port " + port);
 			while (true) {
 				Socket s = server.accept();
-				Thread t = new Thread(new BankHandler(s, localDriver.getBank()));
+				Thread t = new Thread(new BankHandler(s, b));
 				t.start();
 			}
 		}
@@ -72,6 +74,32 @@ class BankHandler implements Runnable {
 					case "getAccountNumbers":
 						c.setReturnObject(b.getAccountNumbers());
 						break;
+					case "deposit":
+						DepositCommand dc = (DepositCommand) c.getAssignedObject();
+						bank.Account depositAcc = b.getAccount(dc.getAccountNo());
+						depositAcc.deposit(dc.getAmount());
+						c.setReturnObject(null);
+						break;
+					case "withdraw":
+						WithdrawCommand wc = (WithdrawCommand) c.getAssignedObject();
+						bank.Account withdrawAcc = b.getAccount(wc.getAccountNo());
+						try {
+							withdrawAcc.withdraw(wc.getAmount());
+							c.setReturnObject(null);
+						} catch (OverdrawException e) {
+							c.setError(e.getMessage());
+						}
+						break;
+					case "activate":
+						bank.Account activateAcc = b.getAccount((String) c.getAssignedObject());
+						activateAcc.setActive(true);
+						c.setReturnObject(null);
+						break;
+					case "deactivate":
+						bank.Account deactivateAcc = b.getAccount((String) c.getAssignedObject());
+						deactivateAcc.setActive(false);
+						c.setReturnObject(null);
+						break;
 					}
 					out.writeObject(c);
 				}
@@ -82,6 +110,12 @@ class BankHandler implements Runnable {
 			throw new RuntimeException(e);
 		} catch (ClassNotFoundException e) {
 			System.err.println(e);
+		} catch (IllegalArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InactiveException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		} finally {
 			try {
 				s.close();

@@ -22,7 +22,8 @@ public interface Account {
 	 * Returns the account number.
 	 * 
 	 * @return the account number.
-	 * @throws IOException if a remoting or communication problem occurs
+	 * @throws IOException
+	 *             if a remoting or communication problem occurs
 	 */
 	String getNumber() throws IOException;
 
@@ -30,7 +31,8 @@ public interface Account {
 	 * Returns the name of the owner.
 	 * 
 	 * @return the name of the owner
-	 * @throws IOException if a remoting or communication problem occurs
+	 * @throws IOException
+	 *             if a remoting or communication problem occurs
 	 */
 	String getOwner() throws IOException;
 
@@ -41,37 +43,44 @@ public interface Account {
 	 * throw an InactiveException.
 	 * 
 	 * @return the state of the account
-	 * @throws IOException if a remoting or communication problem occurs
+	 * @throws IOException
+	 *             if a remoting or communication problem occurs
 	 */
 	boolean isActive() throws IOException;
 
 	/**
 	 * Deposits the given amount on the account.
 	 * 
-	 * @param amount value to deposit
+	 * @param amount
+	 *            value to deposit
 	 * @pre amount &ge; 0
 	 * @pre isActive()
-	 * @throws InactiveException if the account is not active
-	 * @throws IllegalArgumentException if the argument is negative
-	 * @throws IOException if a remoting or communication problem occurs
+	 * @throws InactiveException
+	 *             if the account is not active
+	 * @throws IllegalArgumentException
+	 *             if the argument is negative
+	 * @throws IOException
+	 *             if a remoting or communication problem occurs
 	 */
-	void deposit(double amount) throws IOException,
-			IllegalArgumentException, InactiveException;
+	void deposit(double amount) throws IOException, IllegalArgumentException, InactiveException;
 
 	/**
 	 * Withdraws the given amount from the account.
 	 * 
-	 * @param amount value to withdraw
+	 * @param amount
+	 *            value to withdraw
 	 * @pre amount &ge; 0
 	 * @pre isActive()
-	 * @throws InactiveException if the account is not active.
-	 * @throws OverdrawException if the amount is greater than the current
-	 *             balance
-	 * @throws IllegalArgumentException if the argument is negative
-	 * @throws IOException if a remoting or communication problem occurs
+	 * @throws InactiveException
+	 *             if the account is not active.
+	 * @throws OverdrawException
+	 *             if the amount is greater than the current balance
+	 * @throws IllegalArgumentException
+	 *             if the argument is negative
+	 * @throws IOException
+	 *             if a remoting or communication problem occurs
 	 */
-	void withdraw(double amount) throws IOException,
-			IllegalArgumentException, OverdrawException, InactiveException;
+	void withdraw(double amount) throws IOException, IllegalArgumentException, OverdrawException, InactiveException;
 
 	/**
 	 * Returns the balance of the account. The balance of an account which has
@@ -79,7 +88,10 @@ public interface Account {
 	 * thrown when the balance is accessed.
 	 * 
 	 * @return the balance of this account.
-	 * @throws IOException if a remoting or communication problem occurs
+	 * @throws IOException
+	 *             if a remoting or communication problem occurs
 	 */
 	double getBalance() throws IOException;
+	
+	void setActive(boolean active) throws IOException;
 }
