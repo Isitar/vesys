@@ -1,7 +1,5 @@
 package bank.sockets;
 
-import bank.Account;
-
 public class TransferCommand implements java.io.Serializable {
 	private static final long serialVersionUID = 6587926756375198621L;
 
