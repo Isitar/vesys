@@ -12,18 +12,17 @@ import bank.OverdrawException;
 import bank.local.Driver;
 
 public class Server {
-	private static Bank b;
 
 	public static void main(String[] args) throws IOException {
 		Driver localDriver = new Driver();
 		localDriver.connect(new String[] { "" });
 		int port = 6789;
-		b = localDriver.getBank();
+		BankHandler.b = localDriver.getBank();
 		try (ServerSocket server = new ServerSocket(port)) {
 			System.out.println("Startet Bank Server on port " + port);
 			while (true) {
 				Socket s = server.accept();
-				Thread t = new Thread(new BankHandler(s, b));
+				Thread t = new Thread(new BankHandler(s));
 				t.start();
 			}
 		}
@@ -33,11 +32,10 @@ public class Server {
 
 class BankHandler implements Runnable {
 	private final Socket s;
-	private final Bank b;
+	public static Bank b;
 
-	public BankHandler(Socket s, Bank b) {
+	public BankHandler(Socket s) {
 		this.s = s;
-		this.b = b;
 	}
 
 	public void run() {
@@ -59,12 +57,14 @@ class BankHandler implements Runnable {
 						c.setReturnObject(b.closeAccount((String) c.getAssignedObject()));
 						break;
 					case "getAccount":
-						c.setReturnObject(b.getAccount((String) c.getAssignedObject()));
+						bank.Account acc = b.getAccount((String) c.getAssignedObject());
+						// debug not directly
+						c.setReturnObject(acc);
 						break;
 					case "transfer":
 						TransferCommand tc = (TransferCommand) c.getAssignedObject();
 						try {
-							b.transfer(tc.getAcc1(), tc.getAcc2(), tc.getAmount());
+							b.transfer(b.getAccount(tc.getAccNo1()), b.getAccount(tc.getAccNo2()), tc.getAmount());
 							c.setReturnObject(null);
 						} catch (IllegalArgumentException | OverdrawException | InactiveException e) {
 							c.setError(e.getMessage());
@@ -77,8 +77,14 @@ class BankHandler implements Runnable {
 					case "deposit":
 						DepositCommand dc = (DepositCommand) c.getAssignedObject();
 						bank.Account depositAcc = b.getAccount(dc.getAccountNo());
-						depositAcc.deposit(dc.getAmount());
-						c.setReturnObject(null);
+						try {
+							depositAcc.deposit(dc.getAmount());
+							c.setReturnObject(null);
+						} catch (InactiveException x) {
+							c.setReturnObject(x);
+							c.setError(x.getMessage());
+						}
+
 						break;
 					case "withdraw":
 						WithdrawCommand wc = (WithdrawCommand) c.getAssignedObject();
@@ -101,13 +107,13 @@ class BankHandler implements Runnable {
 						c.setReturnObject(null);
 						break;
 					}
+					out.reset();
 					out.writeObject(c);
 				}
 			}
 			System.out.println("done serving " + s);
 		} catch (IOException e) {
 			System.err.println(e);
-			throw new RuntimeException(e);
 		} catch (ClassNotFoundException e) {
 			System.err.println(e);
 		} catch (IllegalArgumentException e) {

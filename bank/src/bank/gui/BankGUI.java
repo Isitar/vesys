@@ -52,7 +52,6 @@ import bank.InactiveException;
 import bank.OverdrawException;
 import bank.gui.tests.BankTest;
 
-
 public class BankGUI extends JFrame {
 	private BankDriver driver;
 	private Bank bank;
@@ -60,27 +59,27 @@ public class BankGUI extends JFrame {
 	private JComboBox<String> accountcombo = new JComboBox<>();
 	private Map<String, Account> accounts = new HashMap<>();
 
-	private JTextField fld_owner   = new JTextField();
+	private JTextField fld_owner = new JTextField();
 	private JTextField fld_balance = new JTextField();
 
-	private JButton btn_refresh   = new JButton("Refresh");
-	private JButton btn_deposit   = new JButton("Deposit Money");
-	private JButton btn_withdraw  = new JButton("Withdraw Money");
-	private JButton btn_transfer  = new JButton("Transfer Money");
+	private JButton btn_refresh = new JButton("Refresh");
+	private JButton btn_deposit = new JButton("Deposit Money");
+	private JButton btn_withdraw = new JButton("Withdraw Money");
+	private JButton btn_transfer = new JButton("Transfer Money");
 
-	private JMenuItem item_new    = new JMenuItem("New Account...");
-	private JMenuItem item_close  = new JMenuItem("Close Account");
-	private JMenuItem item_exit   = new JMenuItem("Exit");
-	private JMenuItem item_about  = new JMenuItem("About");
-	
+	private JMenuItem item_new = new JMenuItem("New Account...");
+	private JMenuItem item_close = new JMenuItem("Close Account");
+	private JMenuItem item_exit = new JMenuItem("Exit");
+	private JMenuItem item_about = new JMenuItem("About");
+
 	private List<BankTest> tests = new LinkedList<>();
 	private Map<BankTest, JMenuItem> testMenuItems = new HashMap<>();
-	
+
 	private boolean ignoreItemChanges = false;
-	
+
 	private BankTest loadTest(String name) {
 		try {
-			return (BankTest)Class.forName(name).newInstance();
+			return (BankTest) Class.forName(name).newInstance();
 		} catch (InstantiationException e) {
 			return null;
 		} catch (IllegalAccessException e) {
@@ -89,27 +88,28 @@ public class BankGUI extends JFrame {
 			return null;
 		}
 	}
-	
 
 	public BankGUI(BankDriver server) {
 		this.driver = server;
-		this.bank   = server.getBank();
-		
-		if(server instanceof BankDriver2) {
+		this.bank = server.getBank();
+
+		if (server instanceof BankDriver2) {
 			final AtomicBoolean refreshRegistered = new AtomicBoolean(false);
 			try {
-				((BankDriver2)server).registerUpdateHandler(new BankDriver2.UpdateHandler(){
+				((BankDriver2) server).registerUpdateHandler(new BankDriver2.UpdateHandler() {
 					@Override
 					public void accountChanged(String number) {
-						if(refreshRegistered.compareAndSet(false, true)) {
-							SwingUtilities.invokeLater(new Runnable(){
+						if (refreshRegistered.compareAndSet(false, true)) {
+							SwingUtilities.invokeLater(new Runnable() {
 								@Override
 								public void run() {
 									refreshRegistered.set(false);
 									refreshDialog();
-								}});
+								}
+							});
 						}
-					}});
+					}
+				});
 			} catch (IOException e1) {
 				throw new RuntimeException(e1);
 			}
@@ -117,21 +117,33 @@ public class BankGUI extends JFrame {
 
 		setTitle("ClientBank Application");
 		setBackground(Color.lightGray);
-		
+
 		BankTest test;
 		test = loadTest("bank.gui.tests.EfficiencyTest");
-		if(test != null) { tests.add(test); }
+		if (test != null) {
+			tests.add(test);
+		}
 		test = loadTest("bank.gui.tests.WarmUp");
-		if(test != null) { tests.add(test); }
+		if (test != null) {
+			tests.add(test);
+		}
 		test = loadTest("bank.gui.tests.ThreadingTest");
-		if(test != null) { tests.add(test); }
+		if (test != null) {
+			tests.add(test);
+		}
 		test = loadTest("bank.gui.tests.FunctionalityTest");
-		if(test != null) { tests.add(test); }
+		if (test != null) {
+			tests.add(test);
+		}
 		test = loadTest("bank.gui.tests.TransferTest");
-		if(test != null) { tests.add(test); }
+		if (test != null) {
+			tests.add(test);
+		}
 		test = loadTest("bank.gui.tests.ConcurrentReads");
-		if(test != null) { tests.add(test); }
-		
+		if (test != null) {
+			tests.add(test);
+		}
+
 		// define menus
 		JMenuBar menubar = new JMenuBar();
 		setJMenuBar(menubar);
@@ -145,7 +157,7 @@ public class BankGUI extends JFrame {
 
 		JMenu menu_test = new JMenu("Test");
 		menubar.add(menu_test);
-		
+
 		for (BankTest t : tests) {
 			final BankTest tt = t;
 			JMenuItem m = new JMenuItem(t.getName());
@@ -153,7 +165,7 @@ public class BankGUI extends JFrame {
 			menu_test.add(m);
 			m.addActionListener(e -> {
 				try {
-					tt.runTests(BankGUI.this, bank,	currentAccountNumber());
+					tt.runTests(BankGUI.this, bank, currentAccountNumber());
 					refreshDialog();
 				} catch (Exception ex) {
 					error(ex);
@@ -183,16 +195,17 @@ public class BankGUI extends JFrame {
 		});
 
 		accountcombo.addItemListener(e -> {
-			if(ignoreItemChanges)return;
-			if(e.getStateChange() == ItemEvent.SELECTED)
-			updateCustomerInfo();
+			if (ignoreItemChanges)
+				return;
+			if (e.getStateChange() == ItemEvent.SELECTED)
+				updateCustomerInfo();
 		});
 
 		// create layout
 
 		setResizable(false);
 
-		JPanel center=new JPanel(new GridLayout(3,2,5,5));
+		JPanel center = new JPanel(new GridLayout(3, 2, 5, 5));
 		center.add(new JLabel("Account Nr: ", SwingConstants.RIGHT));
 		center.add(accountcombo);
 		center.add(new JLabel("Owner: ", SwingConstants.RIGHT));
@@ -204,11 +217,10 @@ public class BankGUI extends JFrame {
 		fld_owner.setEditable(false);
 		fld_balance.setEditable(false);
 
-		JPanel east=new JPanel(new GridLayout(3,1,5,5));
+		JPanel east = new JPanel(new GridLayout(3, 1, 5, 5));
 		east.add(btn_deposit);
 		east.add(btn_withdraw);
 		east.add(btn_transfer);
-
 
 		JPanel p = new JPanel(new BorderLayout(10, 10));
 		p.add(new JLabel(""), BorderLayout.NORTH);
@@ -235,7 +247,7 @@ public class BankGUI extends JFrame {
 	}
 
 	public String currentAccountNumber() {
-		return (String)accountcombo.getSelectedItem();
+		return (String) accountcombo.getSelectedItem();
 	}
 
 	public void addAccount() {
@@ -250,45 +262,37 @@ public class BankGUI extends JFrame {
 			String number = null;
 			try {
 				number = bank.createAccount(addaccount.getOwnerName());
-			}
-			catch (Exception e){
+			} catch (Exception e) {
 				error(e);
 			}
 
-			if(number==null){
-				JOptionPane.showMessageDialog(this, "Account could not be created",
-					"Error", JOptionPane.ERROR_MESSAGE);
-			}
-			else {
+			if (number == null) {
+				JOptionPane.showMessageDialog(this, "Account could not be created", "Error", JOptionPane.ERROR_MESSAGE);
+			} else {
 				try {
 					Account acc = bank.getAccount(number);
 					accounts.put(number, acc);
 
 					String str = addaccount.getBalance().trim();
 					double amount;
-					if(str.equals("")) amount=0;
-					else amount = Double.parseDouble(str);
+					if (str.equals(""))
+						amount = 0;
+					else
+						amount = Double.parseDouble(str);
 					acc.deposit(amount);
-				}
-				catch (NumberFormatException e) {
-					JOptionPane.showMessageDialog(this, "Illegal Format",
-						"Error", JOptionPane.ERROR_MESSAGE);
-				}
-				catch (IllegalArgumentException e) {
-					JOptionPane.showMessageDialog(this, "Illegal Argument",
-						"Error", JOptionPane.ERROR_MESSAGE);
-				}
-				catch (InactiveException e) {
-					JOptionPane.showMessageDialog(this, "Account is inactive",
-						"Error", JOptionPane.ERROR_MESSAGE);
-				}
-				catch (Exception e){
+				} catch (NumberFormatException e) {
+					JOptionPane.showMessageDialog(this, "Illegal Format", "Error", JOptionPane.ERROR_MESSAGE);
+				} catch (IllegalArgumentException e) {
+					JOptionPane.showMessageDialog(this, "Illegal Argument", "Error", JOptionPane.ERROR_MESSAGE);
+				} catch (InactiveException e) {
+					JOptionPane.showMessageDialog(this, "Account is inactive", "Error", JOptionPane.ERROR_MESSAGE);
+				} catch (Exception e) {
 					error(e);
 				}
-				ignoreItemChanges=true;
+				ignoreItemChanges = true;
 				accountcombo.addItem(number);
 				accountcombo.setSelectedItem(number);
-				ignoreItemChanges=false;
+				ignoreItemChanges = false;
 				refreshDialog();
 			}
 		}
@@ -297,20 +301,18 @@ public class BankGUI extends JFrame {
 	public void closeAccount() {
 		String number = currentAccountNumber();
 		if (number != null) {
-			int res = JOptionPane.showConfirmDialog(this, "Really close account " + number + "?",
-				"Confirm closing", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-			if(res == 0) {
+			int res = JOptionPane.showConfirmDialog(this, "Really close account " + number + "?", "Confirm closing",
+					JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+			if (res == 0) {
 				try {
 					boolean done = bank.closeAccount(number);
-					if(done){
+					if (done) {
 						refreshDialog();
+					} else {
+						JOptionPane.showMessageDialog(this, "Account could not be closed", "Error",
+								JOptionPane.ERROR_MESSAGE);
 					}
-					else {
-						JOptionPane.showMessageDialog(this, "Account could not be closed",
-							"Error", JOptionPane.ERROR_MESSAGE);
-					}
-				}
-				catch (Exception e){
+				} catch (Exception e) {
 					error(e);
 				}
 			}
@@ -320,28 +322,21 @@ public class BankGUI extends JFrame {
 	public void deposit() {
 		String number = currentAccountNumber();
 		if (number != null) {
-		    String s=JOptionPane.showInputDialog(this, "Enter amount to deposit:",
-				"Deposit Money", JOptionPane.QUESTION_MESSAGE);
-		    if (s!=null) {
-			    try  {
+			String s = JOptionPane.showInputDialog(this, "Enter amount to deposit:", "Deposit Money",
+					JOptionPane.QUESTION_MESSAGE);
+			if (s != null) {
+				try {
 					double amount = Double.parseDouble(s);
 					Account a = accounts.get(number);
 					a.deposit(amount);
 					fld_balance.setText(currencyFormat(a.getBalance()));
-			    }
-			    catch (NumberFormatException e) {
-			    	JOptionPane.showMessageDialog(this,"Illegal Value",
-						"Error", JOptionPane.ERROR_MESSAGE);
-			    }
-				catch (IllegalArgumentException e) {
-					JOptionPane.showMessageDialog(this, "Illegal Argument",
-						"Error", JOptionPane.ERROR_MESSAGE);
-				}
-				catch (InactiveException e) {
-					JOptionPane.showMessageDialog(this, "Account is inactive",
-						"Error", JOptionPane.ERROR_MESSAGE);
-				}
-				catch (Exception e){
+				} catch (NumberFormatException e) {
+					JOptionPane.showMessageDialog(this, "Illegal Value", "Error", JOptionPane.ERROR_MESSAGE);
+				} catch (IllegalArgumentException e) {
+					JOptionPane.showMessageDialog(this, "Illegal Argument", "Error", JOptionPane.ERROR_MESSAGE);
+				} catch (InactiveException e) {
+					JOptionPane.showMessageDialog(this, "Account is inactive", "Error", JOptionPane.ERROR_MESSAGE);
+				} catch (Exception e) {
 					error(e);
 				}
 			}
@@ -349,98 +344,81 @@ public class BankGUI extends JFrame {
 	}
 
 	public void withdraw() {
-        String number = currentAccountNumber();
-	    if (number != null) {
-		    String s=JOptionPane.showInputDialog(this, "Enter amount to draw:", "Draw Money",
-	                                         JOptionPane.QUESTION_MESSAGE);
-	    	if (s!=null) {
-		    	try {
+		String number = currentAccountNumber();
+		if (number != null) {
+			String s = JOptionPane.showInputDialog(this, "Enter amount to draw:", "Draw Money",
+					JOptionPane.QUESTION_MESSAGE);
+			if (s != null) {
+				try {
 					double amount = Double.parseDouble(s);
 					Account a = accounts.get(number);
 					a.withdraw(amount);
-	    			fld_balance.setText(currencyFormat(a.getBalance()));
-		    	}
-		    	catch (NumberFormatException e) {
-		    		JOptionPane.showMessageDialog(this,"Illegal Value",
-						"Error", JOptionPane.ERROR_MESSAGE);
-		    	}
-				catch (IllegalArgumentException e) {
-					JOptionPane.showMessageDialog(this, "Illegal Argument",
-						"Error", JOptionPane.ERROR_MESSAGE);
+					fld_balance.setText(currencyFormat(a.getBalance()));
+				} catch (NumberFormatException e) {
+					JOptionPane.showMessageDialog(this, "Illegal Value", "Error", JOptionPane.ERROR_MESSAGE);
+				} catch (IllegalArgumentException e) {
+					JOptionPane.showMessageDialog(this, "Illegal Argument", "Error", JOptionPane.ERROR_MESSAGE);
+				} catch (InactiveException e) {
+					JOptionPane.showMessageDialog(this, "Account is inactive", "Error", JOptionPane.ERROR_MESSAGE);
+				} catch (OverdrawException e) {
+					JOptionPane.showMessageDialog(this, "Account must not be overdrawn", "Error",
+							JOptionPane.ERROR_MESSAGE);
+				} catch (Exception e) {
+					error(e);
 				}
-				catch (InactiveException e) {
-					JOptionPane.showMessageDialog(this, "Account is inactive",
-						"Error", JOptionPane.ERROR_MESSAGE);
-				}
-				catch (OverdrawException e) {
-					JOptionPane.showMessageDialog(this, "Account must not be overdrawn",
-						"Error", JOptionPane.ERROR_MESSAGE);
-				}
-		    	catch (Exception e) {
-		    		error(e);
-		    	}
-	    	}
-	    }
+			}
+		}
 	}
 
-
 	public void transfer() {
- 		String number = currentAccountNumber();
+		String number = currentAccountNumber();
 		if (number != null) {
-			try{
+			try {
 				Set<String> s = new HashSet<>(accounts.keySet());
 				s.remove(number);
 
-			    TransferDialog trans = new TransferDialog(this, "Transfer Money", number, s);
+				TransferDialog trans = new TransferDialog(this, "Transfer Money", number, s);
 				Point loc = getLocation();
 				trans.setLocation(loc.x + 50, loc.y + 50);
 				trans.setModal(true);
-		    	trans.setVisible(true);
+				trans.setVisible(true);
 
-		    	if (!trans.canceled()) {
-			    	if (number.equals(trans.getAccountNumber())){
-			    		JOptionPane.showMessageDialog(this, "Both Accounts are the same!",
-							"Error", JOptionPane.ERROR_MESSAGE);
-			    	}
-			    	else {
+				if (!trans.canceled()) {
+					if (number.equals(trans.getAccountNumber())) {
+						JOptionPane.showMessageDialog(this, "Both Accounts are the same!", "Error",
+								JOptionPane.ERROR_MESSAGE);
+					} else {
 						try {
 							double amount = Double.parseDouble(trans.getBalance());
 							Account from = accounts.get(number);
-							Account to   = accounts.get(trans.getAccountNumber());
+							Account to = accounts.get(trans.getAccountNumber());
 							bank.transfer(from, to, amount);
-							
+
 							// after transfer adjust value of displayed account
 							fld_balance.setText(currencyFormat(from.getBalance()));
 
-				    	    JOptionPane.showMessageDialog(this,"Transfer successfull",
-								"Information", JOptionPane.INFORMATION_MESSAGE);
-				    	}
-				    	catch (NumberFormatException e) {
-				    		JOptionPane.showMessageDialog(this,"Illegal Balance",
-								"Error", JOptionPane.ERROR_MESSAGE);
-				    	}
-						catch (IllegalArgumentException e) {
-							JOptionPane.showMessageDialog(this, "Illegal Argument",
-								"Error", JOptionPane.ERROR_MESSAGE);
+							JOptionPane.showMessageDialog(this, "Transfer successfull", "Information",
+									JOptionPane.INFORMATION_MESSAGE);
+						} catch (NumberFormatException e) {
+							JOptionPane.showMessageDialog(this, "Illegal Balance", "Error", JOptionPane.ERROR_MESSAGE);
+						} catch (IllegalArgumentException e) {
+							JOptionPane.showMessageDialog(this, "Illegal Argument", "Error", JOptionPane.ERROR_MESSAGE);
+						} catch (InactiveException e) {
+							JOptionPane.showMessageDialog(this, "At least one account is inactive", "Error",
+									JOptionPane.ERROR_MESSAGE);
+						} catch (OverdrawException e) {
+							JOptionPane.showMessageDialog(this, "Account must not be overdrawn", "Error",
+									JOptionPane.ERROR_MESSAGE);
 						}
-						catch (InactiveException e) {
-							JOptionPane.showMessageDialog(this, "At least one account is inactive",
-								"Error", JOptionPane.ERROR_MESSAGE);
-						}
-						catch (OverdrawException e) {
-							JOptionPane.showMessageDialog(this, "Account must not be overdrawn",
-								"Error", JOptionPane.ERROR_MESSAGE);
-						}
-			    	}
-		    	}
-			}
-			catch(Exception e){
+					}
+				}
+			} catch (Exception e) {
 				error(e);
 			}
 		}
-    }
+	}
 
-	public void exit(){
+	public void exit() {
 		try {
 			driver.disconnect();
 		} catch (IOException e) {
@@ -453,27 +431,33 @@ public class BankGUI extends JFrame {
 	private void refreshDialog() {
 		String nr = currentAccountNumber();
 		accountcombo.removeAllItems();
-		if (bank != null)  {
-			try{
+		if (bank != null) {
+			try {
 				Set<String> s = bank.getAccountNumbers();
 				ArrayList<String> accnumbers = new ArrayList<>(s);
 				Collections.sort(accnumbers);
-				ignoreItemChanges=true;
-				for(String item : accnumbers){
+				ignoreItemChanges = true;
+				for (String item : accnumbers) {
 					accountcombo.addItem(item);
-					if(item.equals(nr)) accountcombo.setSelectedItem(item);
+					if (item.equals(nr))
+						accountcombo.setSelectedItem(item);
 				}
-				ignoreItemChanges=false;
-				
+				ignoreItemChanges = false;
+
+				// palu.08.03.16.begin
+				accounts.clear();
+				// palu.08.03.16.end
+
 				// clean up local accounts map
-				for(String key : s){
-					if(!accounts.containsKey(key)){
+				for (String key : s) {
+					if (!accounts.containsKey(key)) {
 						accounts.put(key, bank.getAccount(key));
 					}
 				}
 				Iterator<String> it = accounts.keySet().iterator();
-				while(it.hasNext()){
-					if(!s.contains(it.next())) it.remove();
+				while (it.hasNext()) {
+					if (!s.contains(it.next()))
+						it.remove();
 				}
 
 				int size = s.size();
@@ -481,15 +465,14 @@ public class BankGUI extends JFrame {
 				btn_withdraw.setEnabled(size > 0);
 				btn_transfer.setEnabled(size > 1);
 				item_close.setEnabled(size > 0);
-				
+
 				for (BankTest t : tests) {
 					JMenuItem m = testMenuItems.get(t);
 					m.setEnabled(t.isEnabled(size));
 				}
 
 				updateCustomerInfo();
-			}
-			catch(Exception e){
+			} catch (Exception e) {
 				error(e);
 			}
 		}
@@ -497,25 +480,21 @@ public class BankGUI extends JFrame {
 
 	private void updateCustomerInfo() {
 		String nr = currentAccountNumber();
-		try{
-			if(nr != null){
+		try {
+			if (nr != null) {
 				Account a = accounts.get(nr);
-				if(a != null){
+				if (a != null) {
 					fld_owner.setText(a.getOwner());
 					fld_balance.setText(currencyFormat(a.getBalance()));
-				}
-				else {
-					JOptionPane.showMessageDialog(this,"Account not found",
-						"Error", JOptionPane.ERROR_MESSAGE);
+				} else {
+					JOptionPane.showMessageDialog(this, "Account not found", "Error", JOptionPane.ERROR_MESSAGE);
 					refreshDialog();
 				}
-			}
-			else {
+			} else {
 				fld_owner.setText("");
 				fld_balance.setText("");
 			}
-		}
-		catch(Exception e){
+		} catch (Exception e) {
 			error(e);
 		}
 	}
@@ -524,37 +503,34 @@ public class BankGUI extends JFrame {
 		return NumberFormat.getCurrencyInstance().format(val);
 	}
 
-	public void error(Exception e){
+	public void error(Exception e) {
 		JDialog dlg = new ErrorBox(this, e);
 		dlg.setModal(true);
 		dlg.setVisible(true);
 	}
 
-
-	public void about(){
+	public void about() {
 		AboutBox dlg = new AboutBox(this);
 		Dimension dlgSize = dlg.getPreferredSize();
 		Dimension frmSize = getSize();
 		Point loc = getLocation();
-		dlg.setLocation(
-			(frmSize.width  - dlgSize.width) /2 + loc.x,
-			(frmSize.height - dlgSize.height)/2 + loc.y);
+		dlg.setLocation((frmSize.width - dlgSize.width) / 2 + loc.x, (frmSize.height - dlgSize.height) / 2 + loc.y);
 		dlg.setModal(true);
 		dlg.setVisible(true);
 	}
 
 	static class ErrorBox extends JDialog {
-		public ErrorBox(Frame parent, Exception e){
+		public ErrorBox(Frame parent, Exception e) {
 			super(parent);
 			setTitle("Exception");
 			setResizable(true);
 
-			//JTextField msg1 = new JTextField();
-			//msg1.setText(e.getMessage());
+			// JTextField msg1 = new JTextField();
+			// msg1.setText(e.getMessage());
 
 			JTextArea trace = new JTextArea(10, 50);
 			java.io.StringWriter buf = new java.io.StringWriter();
-			java.io.PrintWriter  wr = new java.io.PrintWriter(buf);
+			java.io.PrintWriter wr = new java.io.PrintWriter(buf);
 			e.printStackTrace(wr);
 			trace.setText(buf.toString());
 			trace.setCaretPosition(0);
@@ -566,25 +542,24 @@ public class BankGUI extends JFrame {
 
 			ok.addActionListener(ev -> dispose());
 
-			//getContentPane().add(msg1,   BorderLayout.NORTH);
+			// getContentPane().add(msg1, BorderLayout.NORTH);
 			getContentPane().add(msg, BorderLayout.CENTER);
-			getContentPane().add(ok,  BorderLayout.SOUTH);
+			getContentPane().add(ok, BorderLayout.SOUTH);
 			getRootPane().setDefaultButton(ok);
 			ok.requestFocus();
 			pack();
 		}
 	}
 
-
 	static class AboutBox extends JDialog {
 
-		public AboutBox(Frame parent){
+		public AboutBox(Frame parent) {
 			super(parent);
 			setTitle("About Bank Client");
 			setResizable(false);
 
 			JPanel p_text = new JPanel(new GridLayout(0, 1));
-			p_text.setBorder(BorderFactory.createEmptyBorder(20,50,20,50));
+			p_text.setBorder(BorderFactory.createEmptyBorder(20, 50, 20, 50));
 			p_text.add(new JLabel("Distributed Systems", SwingConstants.CENTER));
 			p_text.add(new JLabel("Bank Client", SwingConstants.CENTER));
 			p_text.add(new JLabel("", SwingConstants.CENTER));
@@ -600,19 +575,19 @@ public class BankGUI extends JFrame {
 	}
 
 	static class AddAccountDialog extends JDialog {
-		private JTextField ownerfield   = new JTextField(12);
+		private JTextField ownerfield = new JTextField(12);
 		private JTextField balancefield = new JTextField(12);
 
-		private boolean canceled=true;
+		private boolean canceled = true;
 
 		AddAccountDialog(Frame owner, String title) {
 
 			super(owner, title);
 
 			// Create Layout
-			JButton btn_ok     = new JButton("Ok");
+			JButton btn_ok = new JButton("Ok");
 			JButton btn_cancel = new JButton("Cancel");
-			JPanel p=new JPanel(new GridLayout(3,2,10,10));
+			JPanel p = new JPanel(new GridLayout(3, 2, 10, 10));
 			p.add(new JLabel("Owner:", JLabel.RIGHT));
 			p.add(ownerfield);
 			p.add(new JLabel("Balance:", JLabel.RIGHT));
@@ -637,28 +612,36 @@ public class BankGUI extends JFrame {
 			pack();
 		}
 
-		public boolean canceled() { return canceled; }
-		public String  getOwnerName() { return ownerfield.getText(); }
-		public String  getBalance() { return balancefield.getText(); }
+		public boolean canceled() {
+			return canceled;
+		}
+
+		public String getOwnerName() {
+			return ownerfield.getText();
+		}
+
+		public String getBalance() {
+			return balancefield.getText();
+		}
 	}
 
 	static class TransferDialog extends JDialog {
 		private JTextField balancefield = new JTextField(12);
 		private JComboBox<String> accountcombo;
 
-		private boolean canceled=true;
+		private boolean canceled = true;
 
 		TransferDialog(Frame owner, String title, String account, Set<String> accounts) {
 			super(owner, title);
 
-			JButton btn_ok     = new JButton("Ok");
+			JButton btn_ok = new JButton("Ok");
 			JButton btn_cancel = new JButton("Cancel");
 			ArrayList<String> accnumbers = new ArrayList<>(accounts);
 			Collections.sort(accnumbers);
-			accountcombo = new JComboBox<>(accnumbers.toArray(new String[]{}));
+			accountcombo = new JComboBox<>(accnumbers.toArray(new String[] {}));
 
 			// Create Layout
-			JPanel p=new JPanel(new GridLayout(4,2,10,10));
+			JPanel p = new JPanel(new GridLayout(4, 2, 10, 10));
 			p.add(new JLabel("From Account:", JLabel.RIGHT));
 			p.add(new JLabel(account));
 			p.add(new JLabel("To Account:", JLabel.RIGHT));
@@ -684,9 +667,17 @@ public class BankGUI extends JFrame {
 			pack();
 		}
 
-		public boolean canceled() { return canceled; }
-		public String getAccountNumber() { return (String)accountcombo.getSelectedItem(); }
-		public String getBalance() { return balancefield.getText(); }
+		public boolean canceled() {
+			return canceled;
+		}
+
+		public String getAccountNumber() {
+			return (String) accountcombo.getSelectedItem();
+		}
+
+		public String getBalance() {
+			return balancefield.getText();
+		}
 	}
 
 }

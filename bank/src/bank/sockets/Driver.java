@@ -79,12 +79,18 @@ public class Driver implements bank.BankDriver {
 		@Override
 		public void transfer(bank.Account from, bank.Account to, double amount)
 				throws IOException, InactiveException, OverdrawException, IllegalArgumentException {
+			if (!(from.isActive() && to.isActive())) {
+				throw new InactiveException();
+			}
 			TransferCommand tc = new TransferCommand();
-			tc.setAcc1(from);
-			tc.setAcc2(to);
+			tc.setAccNo1(from.getNumber());
+			tc.setAccNo2(to.getNumber());
 			tc.setAmount(amount);
 			tcpRequest(tc, "transfer");
-
+			Driver.Account a1 = (Account) from;
+			Driver.Account a2 = (Account) to;
+			a1.withdrawLocal(amount);
+			a2.depositLocal(amount);
 		}
 
 		private Object tcpRequest(Object o, String command) throws IOException {
@@ -96,11 +102,13 @@ public class Driver implements bank.BankDriver {
 		public static Object tcpRequest(Object o, String command, ObjectOutputStream os, ObjectInputStream is)
 				throws IOException {
 
+			os.reset();
 			Command c = new Command();
 			c.setCommand(command);
 			c.setAssignedObject(o);
 			try {
 				os.writeObject(c);
+				os.flush();
 				c = (Command) is.readObject();
 				return c.getReturnObject();
 			} catch (ClassNotFoundException e) {
@@ -110,21 +118,26 @@ public class Driver implements bank.BankDriver {
 	}
 
 	static class Account implements bank.Account, java.io.Serializable {
-		/**
-		 * 
-		 */
 		private static final long serialVersionUID = 103983981303735184L;
 		private String number;
 		private String owner;
 		private double balance;
 		private boolean active = true;
 
-		private ObjectOutputStream os;
-		private ObjectInputStream is;
+		private transient ObjectOutputStream os;
+		private transient ObjectInputStream is;
 
 		public Account(ObjectOutputStream os, ObjectInputStream is) {
 			this.os = os;
 			this.is = is;
+		}
+
+		public void depositLocal(double amount) {
+			this.balance += amount;
+		}
+
+		public void withdrawLocal(double amount) {
+			this.balance -= amount;
 		}
 
 		@Override
