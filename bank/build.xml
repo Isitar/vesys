@@ -1,14 +1,18 @@
 <?xml version="1.0"?>
-<project name="bank" default="compile" basedir=".">
+<project name="bank" default="bank.deploy" basedir=".">
 
 	<property file="build.properties" />
 	
+	<!-- TODO change to general path -->
+	<!--
+	<property name="tomcat.home" value="/home/benzumbrunn/tomcat8" />
+	-->
+	<property name="deploy.home" value="${tomcat.home}/webapps" />
+	
 	<path id="bank.class.path">
-<!--
 		<fileset dir="${lib.dir}">
 			<include name="*.jar" />
 		</fileset>
--->
 		<dirset dir="${bin.dir}"/>
 	</path>
 
@@ -27,6 +31,20 @@
 			classpathref="bank.class.path"
 			includeantruntime="false"
 		/>
+	</target>
+	
+	<target name="bank.war" depends="compile">
+		<war warfile="${basedir}/bank.war" webxml="${res.dir}/web.xml">
+			<classes dir="${bin.dir}">
+				<include name="bank/sockets/*.class"/>
+				<include name="bank/*.class"/>
+				<include name="bank/local/*.class"/>
+			</classes>
+		</war>
+	</target>
+	
+	<target name="bank.deploy" depends="bank.war">
+		<copy file="${basedir}/bank.war" todir="${deploy.home}" />
 	</target>
 
 	<target name="run.local" depends="compile" description="launches local bank">
