@@ -4,9 +4,7 @@
 	<property file="build.properties" />
 	
 	<!-- TODO change to general path -->
-	<!--
 	<property name="tomcat.home" value="/home/benzumbrunn/tomcat8" />
-	-->
 	<property name="deploy.home" value="${tomcat.home}/webapps" />
 	
 	<path id="bank.class.path">
