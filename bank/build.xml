@@ -34,6 +34,7 @@
 	<target name="bank.war" depends="compile">
 		<war warfile="${basedir}/bank.war" webxml="${res.dir}/web.xml">
 			<classes dir="${bin.dir}">
+				<include name="bank/servlet/*.class"/>
 				<include name="bank/sockets/*.class"/>
 				<include name="bank/*.class"/>
 				<include name="bank/local/*.class"/>
