@@ -9,11 +9,14 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import bank.Account;
 import bank.Bank;
 import bank.BankDriver;
 import bank.InactiveException;
 
 public class BankServlet extends javax.servlet.http.HttpServlet {
+	
+	Bank bank = ServletSI.getInstance().getBank();
 
 	static class ServletSI {
 		BankDriver localDriver;
@@ -47,12 +50,19 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 		PrintWriter out = response.getWriter();
 		out.println("<html><body>");
 
-		out.println("<table><tr><th>Number</th></tr>");
-		Set<String> accNumbers = ServletSI.getInstance().getBank().getAccountNumbers();
-		accNumbers.forEach(a -> out.println("<tr><td>" + a + "</td></tr>"));
+		out.println("<table><tr><th>Owner</th><th>Number</th><th>Balance</th></tr>");
+		Set<String> accNumbers = bank.getAccountNumbers();
+		//accNumbers.forEach(a -> out.println("<tr><td>" + a + "</td></tr>"));
+		for (String accNumber : accNumbers) {
+			Account acc = bank.getAccount(accNumber);
+			out.print("<tr><td>" + acc.getOwner() + "</td>");
+			out.print("<td>" + accNumber + "</td>");
+			out.println("<td>" + acc.getBalance() + "</td></tr>");
+		}
 		out.println("</table>");
 
 		// createaccount
+		out.println("<h3>Create Account</h3>");
 		out.println("<form action=\"\" method=\"post\">");
 		out.println("<input type=\"hidden\" name=\"action\" value=\"createaccount\">");
 		out.println("Owner: <input type=\"text\" name=\"owner\"><br>");
@@ -63,7 +73,6 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 	}
 
 	private void createAccount(HttpServletRequest request) {
-		Bank bank = ServletSI.getInstance().getBank();
 		String owner = getOwner(request);
 		try {
 			String accountNumber = bank.createAccount(owner);
@@ -81,11 +90,13 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 		switch (action) {
 			case "createaccount":
 				createAccount(request);
-				// TODO response.setStatus(HttpServletResponse.SC_CREATED);
 				break;
 			default:
 				break;
 		}
+
+		// refresh page
+		response.sendRedirect("/bank");
 		
 
 	}
