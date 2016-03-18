@@ -2,10 +2,8 @@ package bank.servlet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Enumeration;
 import java.util.Set;
 
-import javax.print.attribute.standard.PrinterLocation;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -16,6 +14,7 @@ import bank.BankDriver;
 import bank.InactiveException;
 import bank.OverdrawException;
 
+@SuppressWarnings("serial")
 public class BankServlet extends javax.servlet.http.HttpServlet {
 
 	Bank bank = ServletSI.getInstance().getBank();
@@ -55,7 +54,7 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 		out.println("<html><body>");
 		out.println("<h1>Account List</h1><table border=1>" + "<tr>" + "<th>Number</th>" + "<th>Owner</th>"
 				+ "<th>Balance</th>" + "<th>Active</th>" + "<th>Deposit</th>" + "<th>Withdraw</th>"
-				+ "<th>transfer</th>" + "<th>inactivate</th>" + "</tr>");
+				+ "<th>Transfer</th>" + "<th>Inactivate</th>" + "</tr>");
 		Bank b = ServletSI.getInstance().getBank();
 		Set<String> accNumbers = b.getAccountNumbers();
 		accNumbers.forEach(a -> {
@@ -64,7 +63,7 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 				out.println("<tr><td>" + a + "</td>" + "<td>" + acc.getOwner() + "</td>" + "<td>" + acc.getBalance()
 						+ "</td>" + "<td>" + acc.isActive() + "</td>");
 
-				out.println("<br>");
+				//out.println("<br>");
 				// deposit
 				out.println("<td><form action=\"\" method=\"post\">");
 				out.println("<input type=\"hidden\" name=\"action\" value=\"deposit\">");
@@ -72,7 +71,7 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 				out.println("Deposit Amount: <input type=\"text\" name=\"amount\">");
 				out.println("<input type=\"submit\" value=\"Deposit\">");
 				out.println("</form></td>");
-				out.println("<br>");
+				//out.println("<br>");
 				// withdraw
 				out.println("<td><form action=\"\" method=\"post\">");
 				out.println("<input type=\"hidden\" name=\"action\" value=\"withdraw\">");
@@ -80,23 +79,28 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 				out.println("Withdraw Amount: <input type=\"text\" name=\"amount\">");
 				out.println("<input type=\"submit\" value=\"Withdraw\">");
 				out.println("</form></td>");
-				out.println("<br>");
+				//out.println("<br>");
 				// transfer
+				// TODO select options
 				out.println("<td><form action=\"\" method=\"post\">");
 				out.println("<input type=\"hidden\" name=\"action\" value=\"transfer\">");
 				out.println("<input type=\"hidden\" name=\"accountNo\" value=\"" + acc.getNumber() + "\">");
-				out.println(
-						"<table><tr><td>Transfer To Acc:</td><td><input type=\"text\" name=\"ToAccount\"></td></tr>");
+				out.println("<table><tr><td>Transfer To Acc:</td><td>");
+				out.println("<select name=\"ToAccount\">");
+				for (String accNum : accNumbers) {
+					out.println("<option value=\"" + accNum + "\">" + accNum + "</option>");
+				}
+				out.println("</select></td></tr>");
 				out.println("<tr><td>Amount</td><td><input type=\"text\" name=\"amount\"></td></tr>");
 				out.println("<tr><td colspan=\"2\"><input type=\"submit\" value=\"Transfer\"></td></tr></table>");
 				out.println("</form></td>");
-				out.println("<br>");
+				//out.println("<br>");
 
 				// set Inactive
 				out.println("<td><form action=\"\" method=\"post\">");
 				out.println("<input type=\"hidden\" name=\"action\" value=\"inactivate\">");
 				out.println("<input type=\"hidden\" name=\"accountNo\" value=\"" + acc.getNumber() + "\">");
-				out.println("<input type=\"submit\" value=\"SetInactive\">");
+				out.println("<input type=\"submit\" value=\"Inactivate\">");
 				out.println("</form></td>");
 
 				out.println("</tr>");
@@ -107,8 +111,8 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 		});
 		out.println("</table>");
 
-		// createaccount¨
-		out.println("<h1>Create new Account</h1><br>");
+		// createaccountï¿½
+		out.println("<h3>Create new Account</h3>");
 		out.println("<table>");
 		out.println("<form action=\"\" method=\"post\">");
 		out.println("<input type=\"hidden\" name=\"action\" value=\"createaccount\">");
