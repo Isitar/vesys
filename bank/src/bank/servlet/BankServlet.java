@@ -50,11 +50,11 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 
 		response.setContentType("text/html");
 		PrintWriter out = response.getWriter();
+		out.flush();
 		out.println("<html><body>");
-		out.println("<h1>Account List</h1><br>");
-		out.println("<table border=1>" + "<tr>" + "<th>Number</th>" + "<th>Owner</th>" + "<th>Balance</th>"
-				+ "<th>Active</th>" + "<th>Deposit</th>" + "<th>Withdraw</th>" + "<th>transfer</th>"
-				+ "<th>inactivate</th>" + "</tr>");
+		out.println("<h1>Account List</h1><table border=1>" + "<tr>" + "<th>Number</th>" + "<th>Owner</th>"
+				+ "<th>Balance</th>" + "<th>Active</th>" + "<th>Deposit</th>" + "<th>Withdraw</th>"
+				+ "<th>transfer</th>" + "<th>inactivate</th>" + "</tr>");
 		Bank b = ServletSI.getInstance().getBank();
 		Set<String> accNumbers = b.getAccountNumbers();
 		accNumbers.forEach(a -> {
@@ -102,55 +102,19 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 				e.printStackTrace();
 			}
 
-<<<<<<< HEAD
 		});
 		out.println("</table>");
 
 		// createaccount¨
 		out.println("<h1>Create new Account</h1><br>");
-=======
-		out.println("<table><tr><th>Owner</th><th>Number</th><th>Balance</th></tr>");
-		Set<String> accNumbers = bank.getAccountNumbers();
-		// accNumbers.forEach(a -> out.println("<tr><td>" + a + "</td></tr>"));
-		for (String accNumber : accNumbers) {
-			Account acc = bank.getAccount(accNumber);
-			out.print("<tr>");
-
-			// list account details
-			out.print("<td>" + acc.getOwner() + "</td>");
-			out.print("<td>" + accNumber + "</td>");
-			out.println("<td>" + acc.getBalance() + "</td>");
-
-			out.print("</tr>");
-		}
-		out.println("</table>");
-
-		// createaccount
-		out.println("<h3>Create Account</h3>");
->>>>>>> dc00bf3f1253227d7cee23261c9c23222d0a90e3
+		out.println("<table>");
 		out.println("<form action=\"\" method=\"post\">");
 		out.println("<input type=\"hidden\" name=\"action\" value=\"createaccount\">");
-		out.println("Owner: <input type=\"text\" name=\"owner\"><br>");
-		out.println("Balance: <input type=\"text\" name=\"balance\"><br>");
-		out.println("<input type=\"submit\" value=\"Submit\">");
+		out.println("<tr><td>Owner:</td><td><input type=\"text\" name=\"owner\"></td></tr>");
+		out.println("<tr><td>Balance:</td><td><input type=\"text\" name=\"balance\"></td></tr>");
+		out.println("<tr><td colspan=\"2\"><input type=\"submit\" value=\"Submit\"></td></tr>");
 		out.println("</form>");
-
-		// deposit
-<<<<<<< HEAD
-=======
-		out.println("<h3>Deposit</h3>");
-		out.print("<form action=\"\" method=\"post\">");
-		out.println("<input type=\"hidden\" name=\"action\" value=\"deposit\">");
-		out.println("<select name=\"number\">");
-		for (String accNumber : accNumbers) {
-			out.println("<option value=\"" + accNumber + "\">" + accNumber + "</option>");
-		}
-		out.println("</select>");
-		out.println("Amount: <input type=\"text\" name=\"amount\"><br>");
-		out.println("<input type=\"submit\" value=\"Submit\"><br>");
-		out.println("</form>");
->>>>>>> dc00bf3f1253227d7cee23261c9c23222d0a90e3
-
+		out.println("<table>");
 		out.println("</body></html>");
 	}
 
@@ -162,7 +126,6 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 		switch (action) {
 		case "createaccount":
 			createAccount(request);
-<<<<<<< HEAD
 			response.sendRedirect("");
 			break;
 		case "deposit":
@@ -194,45 +157,24 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 			break;
 		case "inactivate":
 			inactivate(request);
-=======
-			break;
-		case "deposit":
-			deposit(request);
->>>>>>> dc00bf3f1253227d7cee23261c9c23222d0a90e3
+			response.sendRedirect("");
 			break;
 		default:
+			response.sendRedirect("");
 			break;
 		}
-
-<<<<<<< HEAD
-=======
-		// refresh page
-		response.sendRedirect("/bank");
-
->>>>>>> dc00bf3f1253227d7cee23261c9c23222d0a90e3
 	}
 
 	private void createAccount(HttpServletRequest request) {
 		try {
-<<<<<<< HEAD
-			String accountNumber = bank.createAccount(owner);
-			try {
-				double balance = Double.parseDouble(getBalance(request));
-				bank.getAccount(accountNumber).deposit(balance);
-			} catch (NumberFormatException ex) {
-				// no or invalid balance submitted
-			}
-=======
 			String accNumber = bank.createAccount(getOwner(request));
 			double balance = getBalance(request);
 			bank.getAccount(accNumber).deposit(balance);
->>>>>>> dc00bf3f1253227d7cee23261c9c23222d0a90e3
 		} catch (IOException | InactiveException e) {
-			e.printStackTrace();
+			// nothing
 		}
 	}
 
-<<<<<<< HEAD
 	private void deposit(HttpServletRequest request) throws InactiveException {
 		Bank bank = ServletSI.getInstance().getBank();
 		try {
@@ -285,18 +227,6 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-=======
-	private void deposit(HttpServletRequest request) {
-		try {
-			bank.getAccount(getNumber(request)).deposit(getAmount(request));
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (InactiveException e) {
-			e.printStackTrace();
-		}
->>>>>>> dc00bf3f1253227d7cee23261c9c23222d0a90e3
 	}
 
 	private String getOwner(HttpServletRequest request) {
@@ -308,15 +238,11 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 	}
 
 	private double getBalance(HttpServletRequest request) {
-		return Double.parseDouble(request.getParameterValues("balance")[0]);
-	}
-
-	private String getNumber(HttpServletRequest request) {
-		return request.getParameterValues("number")[0];
-	}
-
-	private double getAmount(HttpServletRequest request) {
-		return Double.parseDouble(request.getParameterValues("amount")[0]);
+		try {
+			return Double.parseDouble(request.getParameterValues("balance")[0]);
+		} catch (Exception e) {
+			return 0;
+		}
 	}
 
 	private String getAccountNo(HttpServletRequest request) {
