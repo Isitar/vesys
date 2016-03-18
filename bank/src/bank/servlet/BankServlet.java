@@ -51,6 +51,7 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 		response.setContentType("text/html");
 		PrintWriter out = response.getWriter();
 		out.flush();
+
 		out.println("<html><body>");
 		out.println("<h1>Account List</h1><table border=1>" + "<tr>" + "<th>Number</th>" + "<th>Owner</th>"
 				+ "<th>Balance</th>" + "<th>Active</th>" + "<th>Deposit</th>" + "<th>Withdraw</th>"
@@ -84,9 +85,10 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 				out.println("<td><form action=\"\" method=\"post\">");
 				out.println("<input type=\"hidden\" name=\"action\" value=\"transfer\">");
 				out.println("<input type=\"hidden\" name=\"accountNo\" value=\"" + acc.getNumber() + "\">");
-				out.println("Transfer To Acc: <input type=\"text\" name=\"ToAccount\"><br />");
-				out.println("Amount: <input type=\"text\" name=\"amount\">");
-				out.println("<input type=\"submit\" value=\"Transfer\">");
+				out.println(
+						"<table><tr><td>Transfer To Acc:</td><td><input type=\"text\" name=\"ToAccount\"></td></tr>");
+				out.println("<tr><td>Amount</td><td><input type=\"text\" name=\"amount\"></td></tr>");
+				out.println("<tr><td colspan=\"2\"><input type=\"submit\" value=\"Transfer\"></td></tr></table>");
 				out.println("</form></td>");
 				out.println("<br>");
 
