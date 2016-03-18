@@ -15,7 +15,7 @@ import bank.BankDriver;
 import bank.InactiveException;
 
 public class BankServlet extends javax.servlet.http.HttpServlet {
-	
+
 	Bank bank = ServletSI.getInstance().getBank();
 
 	static class ServletSI {
@@ -52,12 +52,17 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 
 		out.println("<table><tr><th>Owner</th><th>Number</th><th>Balance</th></tr>");
 		Set<String> accNumbers = bank.getAccountNumbers();
-		//accNumbers.forEach(a -> out.println("<tr><td>" + a + "</td></tr>"));
+		// accNumbers.forEach(a -> out.println("<tr><td>" + a + "</td></tr>"));
 		for (String accNumber : accNumbers) {
 			Account acc = bank.getAccount(accNumber);
-			out.print("<tr><td>" + acc.getOwner() + "</td>");
+			out.print("<tr>");
+
+			// list account details
+			out.print("<td>" + acc.getOwner() + "</td>");
 			out.print("<td>" + accNumber + "</td>");
-			out.println("<td>" + acc.getBalance() + "</td></tr>");
+			out.println("<td>" + acc.getBalance() + "</td>");
+
+			out.print("</tr>");
 		}
 		out.println("</table>");
 
@@ -68,39 +73,67 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 		out.println("Owner: <input type=\"text\" name=\"owner\"><br>");
 		out.println("Balance: <input type=\"text\" name=\"balance\"><br>");
 		out.println("<input type=\"submit\" value=\"Submit\">");
+		out.println("</form>");
+
+		// deposit
+		out.println("<h3>Deposit</h3>");
+		out.print("<form action=\"\" method=\"post\">");
+		out.println("<input type=\"hidden\" name=\"action\" value=\"deposit\">");
+		out.println("<select name=\"number\">");
+		for (String accNumber : accNumbers) {
+			out.println("<option value=\"" + accNumber + "\">" + accNumber + "</option>");
+		}
+		out.println("</select>");
+		out.println("Amount: <input type=\"text\" name=\"amount\"><br>");
+		out.println("<input type=\"submit\" value=\"Submit\"><br>");
+		out.println("</form>");
 
 		out.println("</body></html>");
 	}
 
+	@Override
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		String action = getAction(request);
+
+		switch (action) {
+		case "createaccount":
+			createAccount(request);
+			break;
+		case "deposit":
+			deposit(request);
+			break;
+		default:
+			break;
+		}
+
+		// refresh page
+		response.sendRedirect("/bank");
+
+	}
+
 	private void createAccount(HttpServletRequest request) {
-		String owner = getOwner(request);
 		try {
-			String accountNumber = bank.createAccount(owner);
-			double balance = Double.parseDouble(getBalance(request));
-			bank.getAccount(accountNumber).deposit(balance);
+			String accNumber = bank.createAccount(getOwner(request));
+			double balance = getBalance(request);
+			bank.getAccount(accNumber).deposit(balance);
 		} catch (IOException | InactiveException e) {
 			e.printStackTrace();
 		}
 	}
 
-	@Override
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		String action = getAction(request);
-
-		switch (action) {
-			case "createaccount":
-				createAccount(request);
-				break;
-			default:
-				break;
+	private void deposit(HttpServletRequest request) {
+		try {
+			bank.getAccount(getNumber(request)).deposit(getAmount(request));
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (InactiveException e) {
+			e.printStackTrace();
 		}
-
-		// refresh page
-		response.sendRedirect("/bank");
-		
-
 	}
-	
+
 	private String getOwner(HttpServletRequest request) {
 		return request.getParameterValues("owner")[0];
 	}
@@ -109,8 +142,16 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 		return request.getParameterValues("action")[0];
 	}
 
-	private String getBalance(HttpServletRequest request) {
-		return request.getParameterValues("balance")[0];
+	private double getBalance(HttpServletRequest request) {
+		return Double.parseDouble(request.getParameterValues("balance")[0]);
+	}
+
+	private String getNumber(HttpServletRequest request) {
+		return request.getParameterValues("number")[0];
+	}
+
+	private double getAmount(HttpServletRequest request) {
+		return Double.parseDouble(request.getParameterValues("amount")[0]);
 	}
 
 }
