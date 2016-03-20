@@ -63,7 +63,6 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 				out.println("<tr><td>" + a + "</td>" + "<td>" + acc.getOwner() + "</td>" + "<td>" + acc.getBalance()
 						+ "</td>" + "<td>" + acc.isActive() + "</td>");
 
-				//out.println("<br>");
 				// deposit
 				out.println("<td><form action=\"\" method=\"post\">");
 				out.println("<input type=\"hidden\" name=\"action\" value=\"deposit\">");
@@ -71,7 +70,6 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 				out.println("Deposit Amount: <input type=\"text\" name=\"amount\">");
 				out.println("<input type=\"submit\" value=\"Deposit\">");
 				out.println("</form></td>");
-				//out.println("<br>");
 				// withdraw
 				out.println("<td><form action=\"\" method=\"post\">");
 				out.println("<input type=\"hidden\" name=\"action\" value=\"withdraw\">");
@@ -79,7 +77,6 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 				out.println("Withdraw Amount: <input type=\"text\" name=\"amount\">");
 				out.println("<input type=\"submit\" value=\"Withdraw\">");
 				out.println("</form></td>");
-				//out.println("<br>");
 				// transfer
 				// TODO select options
 				out.println("<td><form action=\"\" method=\"post\">");
@@ -94,8 +91,6 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 				out.println("<tr><td>Amount</td><td><input type=\"text\" name=\"amount\"></td></tr>");
 				out.println("<tr><td colspan=\"2\"><input type=\"submit\" value=\"Transfer\"></td></tr></table>");
 				out.println("</form></td>");
-				//out.println("<br>");
-
 				// set Inactive
 				out.println("<td><form action=\"\" method=\"post\">");
 				out.println("<input type=\"hidden\" name=\"action\" value=\"inactivate\">");
@@ -132,41 +127,38 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 		switch (action) {
 		case "createaccount":
 			createAccount(request);
-			response.sendRedirect("");
+			response.sendRedirect("/bank");
 			break;
 		case "deposit":
 			try {
 				deposit(request);
-				response.sendRedirect("");
+				response.sendRedirect("/bank");
 			} catch (InactiveException e) {
-				response.sendRedirect("");
-				// TODO redirect to error Page?
+				createErrorPage(response, e);
 			}
 			break;
 		case "withdraw":
 			try {
 				withdraw(request);
-				response.sendRedirect("");
+				response.sendRedirect("/bank");
 			} catch (IllegalArgumentException | OverdrawException | InactiveException e) {
-				response.sendRedirect("");
-				// TODO redirect to error Page?
+				createErrorPage(response, e);
 			}
 			break;
 		case "transfer":
 			try {
 				transfer(request);
-				response.sendRedirect("");
+				response.sendRedirect("/bank");
 			} catch (IllegalArgumentException | OverdrawException | InactiveException e) {
-				response.sendRedirect("");
-				// TODO redirect to error Page?
+				createErrorPage(response, e);
 			}
 			break;
 		case "inactivate":
 			inactivate(request);
-			response.sendRedirect("");
+			response.sendRedirect("/bank");
 			break;
 		default:
-			response.sendRedirect("");
+			response.sendRedirect("/bank");
 			break;
 		}
 	}
@@ -189,7 +181,6 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 				acc.deposit(getAmount(request));
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -230,7 +221,6 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 				acc.setActive(false);
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -265,5 +255,21 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 
 	private String getToAccount(HttpServletRequest request) {
 		return request.getParameter("ToAccount");
+	}
+
+	private void createErrorPage(HttpServletResponse response, Exception e) {
+		try {
+			PrintWriter out = response.getWriter();
+			out.println("<html><body>");
+			out.println("<p><b>Our bank could not process your command.</b></p>");
+			out.println("<p>The following exception was thrown:</p>");
+			out.println("<p>");
+			e.printStackTrace(out);
+			out.println("</p>");
+			out.println("<form action=\"\" method=\"get\">");
+			out.println("<input type=\"submit\" value=\"Back\">");
+			out.println("</form>");
+			out.println("</body></html>");
+		} catch (IOException e1) {}
 	}
 }
