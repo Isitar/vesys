@@ -126,8 +126,12 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 
 		switch (action) {
 		case "createaccount":
-			createAccount(request);
-			response.sendRedirect("/bank");
+			try {
+				createAccount(request);
+				response.sendRedirect("/bank");
+			} catch (IllegalArgumentException | InactiveException e) {
+				createErrorPage(response, e);
+			}
 			break;
 		case "deposit":
 			try {
@@ -144,6 +148,7 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 			} catch (IllegalArgumentException | OverdrawException | InactiveException e) {
 				createErrorPage(response, e);
 			}
+
 			break;
 		case "transfer":
 			try {
@@ -163,13 +168,15 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 		}
 	}
 
-	private void createAccount(HttpServletRequest request) {
+	private void createAccount(HttpServletRequest request) throws IllegalArgumentException, InactiveException{
 		try {
 			String accNumber = bank.createAccount(getOwner(request));
 			double balance = getBalance(request);
 			bank.getAccount(accNumber).deposit(balance);
-		} catch (IOException | InactiveException e) {
-			// nothing
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (IllegalArgumentException | InactiveException e) {
+			throw e;
 		}
 	}
 
@@ -270,6 +277,7 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 			out.println("<input type=\"submit\" value=\"Back\">");
 			out.println("</form>");
 			out.println("</body></html>");
-		} catch (IOException e1) {}
+		} catch (IOException e1) {
+		}
 	}
 }

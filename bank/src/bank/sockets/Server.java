@@ -19,7 +19,7 @@ public class Server {
 		int port = 6789;
 		BankHandler.b = localDriver.getBank();
 		try (ServerSocket server = new ServerSocket(port)) {
-			System.out.println("Startet Bank Server on port " + port);
+			System.out.println("Started Bank Server on port " + port);
 			while (true) {
 				Socket s = server.accept();
 				Thread t = new Thread(new BankHandler(s));

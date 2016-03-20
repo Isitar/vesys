@@ -41,16 +41,11 @@ public class Driver implements bank.BankDriver {
 		@Override
 		public Set<String> getAccountNumbers() {
 			HashSet<String> accountNumbers = new HashSet<String>();
-			// palu.begin
-			// ORIG
-			/*
-			 * for (String number : accounts.keySet()) { // iterates over keys
-			 * if (accounts.get(number).isActive()) { // only add when active
-			 * accountNumbers.add(number); } }
-			 */
-
-			accounts.values().forEach(a -> accountNumbers.add(a.getNumber()));
-			// palu.end
+			accounts.values().forEach(a -> {
+				if (a.isActive()) {
+					accountNumbers.add(a.getNumber());
+				}
+			});
 			return accountNumbers;
 		}
 
@@ -58,17 +53,13 @@ public class Driver implements bank.BankDriver {
 		public String createAccount(String owner) {
 			Account account = new Account(owner);
 			accounts.put(account.getNumber(), account);
-			if (account.isActive()) {
-				return account.getNumber();
-			} else {
-				return null; // account could not be created
-			}
+			return account.getNumber();
 		}
 
 		@Override
 		public boolean closeAccount(String number) {
 			Account acc = accounts.get(number);
-			if (acc.isActive() && acc.getBalance() == 0) {
+			if (acc.isActive() && acc.getBalance() == 0 && !(acc == null)) {
 				acc.setActive(false);
 				return true; // account is closed
 			} else {
@@ -169,6 +160,9 @@ public class Driver implements bank.BankDriver {
 			}
 			if (amount > balance) {
 				throw new OverdrawException();
+			}
+			if (amount < 0) {
+				throw new IllegalArgumentException();
 			}
 			balance -= amount;
 		}

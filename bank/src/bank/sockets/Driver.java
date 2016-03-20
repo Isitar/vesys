@@ -26,7 +26,14 @@ public class Driver implements bank.BankDriver {
 	@Override
 	public void disconnect() {
 		bank = null;
-		System.out.println("disconnected...");
+		try {
+			bank.getSocket().close();
+		} catch (IOException e) {
+			System.err.println("could not close socket");
+			e.printStackTrace();
+		} finally {
+			System.out.println("disconnected...");
+		}
 	}
 
 	@Override
@@ -92,6 +99,10 @@ public class Driver implements bank.BankDriver {
 		private Object tcpRequest(Object o, String command) throws IOException {
 			return Helper.tcpRequest(o, command, os, is);
 		}
+		
+		protected Socket getSocket() {
+			return s;
+		}
 	}
 
 	static class Helper {
@@ -113,8 +124,7 @@ public class Driver implements bank.BankDriver {
 		}
 	}
 
-	static class Account implements bank.Account, java.io.Serializable {
-		private static final long serialVersionUID = 103983981303735184L;
+	static class Account implements bank.Account {
 		private String number;
 		private String owner;
 		private double balance;
