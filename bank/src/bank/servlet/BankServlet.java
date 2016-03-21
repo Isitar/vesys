@@ -121,7 +121,7 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 		}
 	}
 
-	private void createAccount(HttpServletRequest request) throws IllegalArgumentException, InactiveException{
+	private void createAccount(HttpServletRequest request) throws IllegalArgumentException, InactiveException {
 		try {
 			String accNumber = bank.createAccount(getOwner(request));
 			double balance = getBalance(request);
@@ -226,9 +226,7 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 			out.println("<p>");
 			e.printStackTrace(out);
 			out.println("</p>");
-			out.println("<form action=\"\" method=\"get\">");
-			out.println("<input type=\"submit\" value=\"Back\">");
-			out.println("</form>");
+			out.println("<a href = \"/bank\">Back</a>");
 			out.println("</body></html>");
 		} catch (IOException e1) {
 		}

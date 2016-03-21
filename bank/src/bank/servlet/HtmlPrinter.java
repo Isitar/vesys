@@ -48,14 +48,14 @@ public class HtmlPrinter {
 	}
 
 	public void printTransferOption(Account acc, Set<String> accNumbers) throws IOException {
+		String accNumber = acc.getNumber();
 		out.println("<td><form action=\"\" method=\"post\">");
 		out.println("<input type=\"hidden\" name=\"action\" value=\"transfer\">");
 		out.println("<input type=\"hidden\" name=\"accountNo\" value=\"" + acc.getNumber() + "\">");
 		out.println("<table><tr><td>Transfer To Acc:</td><td>");
 		out.println("<select name=\"ToAccount\">");
-		for (String accNum : accNumbers) {
-			out.println("<option value=\"" + accNum + "\">" + accNum + "</option>");
-		}
+		accNumbers.stream().filter(x -> !x.equals(accNumber)).forEach(accNum -> out.println("<option value=\"" 
+				+ accNum + "\">" + accNum + "</option>"));
 		out.println("</select></td></tr>");
 		out.println("<tr><td>Amount</td><td><input type=\"text\" name=\"amount\"></td></tr>");
 		out.println("<tr><td colspan=\"2\"><input type=\"submit\" value=\"Transfer\"></td></tr></table>");
