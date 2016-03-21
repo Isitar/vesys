@@ -16,6 +16,10 @@ public class HtmlPrinter {
 		this.out = out;
 		this.b = b;
 	}
+	
+	public HtmlPrinter(PrintWriter out) {
+		this.out = out;
+	}
 
 	public void printTopBody() {
 		out.println("<html><body>");
@@ -83,6 +87,17 @@ public class HtmlPrinter {
 		out.println("<tr><td colspan=\"2\"><input type=\"submit\" value=\"Submit\"></td></tr>");
 		out.println("</form>");
 		out.println("<table>");
+		out.println("</body></html>");
+	}
+
+	public void createErrorPage(Exception e) {
+		out.println("<html><body>");
+		out.println("<p><b>Our bank could not process your command.</b></p>");
+		out.println("<p>The following exception was thrown:</p>");
+		out.println("<p>");
+		e.printStackTrace(out);
+		out.println("</p>");
+		out.println("<a href = \"/bank\">Back</a>");
 		out.println("</body></html>");
 	}
 

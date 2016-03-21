@@ -76,6 +76,7 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		String action = getAction(request);
+		HtmlPrinter printer = new HtmlPrinter(response.getWriter());
 
 		switch (action) {
 		case "createaccount":
@@ -83,7 +84,7 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 				createAccount(request);
 				response.sendRedirect("/bank");
 			} catch (IllegalArgumentException | InactiveException e) {
-				createErrorPage(response, e);
+				printer.createErrorPage(e);
 			}
 			break;
 		case "deposit":
@@ -91,7 +92,7 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 				deposit(request);
 				response.sendRedirect("/bank");
 			} catch (InactiveException e) {
-				createErrorPage(response, e);
+				printer.createErrorPage(e);
 			}
 			break;
 		case "withdraw":
@@ -99,7 +100,7 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 				withdraw(request);
 				response.sendRedirect("/bank");
 			} catch (IllegalArgumentException | OverdrawException | InactiveException e) {
-				createErrorPage(response, e);
+				printer.createErrorPage(e);
 			}
 
 			break;
@@ -108,7 +109,7 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 				transfer(request);
 				response.sendRedirect("/bank");
 			} catch (IllegalArgumentException | OverdrawException | InactiveException e) {
-				createErrorPage(response, e);
+				printer.createErrorPage(e);
 			}
 			break;
 		case "inactivate":
@@ -217,18 +218,4 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 		return request.getParameter("ToAccount");
 	}
 
-	private void createErrorPage(HttpServletResponse response, Exception e) {
-		try {
-			PrintWriter out = response.getWriter();
-			out.println("<html><body>");
-			out.println("<p><b>Our bank could not process your command.</b></p>");
-			out.println("<p>The following exception was thrown:</p>");
-			out.println("<p>");
-			e.printStackTrace(out);
-			out.println("</p>");
-			out.println("<a href = \"/bank\">Back</a>");
-			out.println("</body></html>");
-		} catch (IOException e1) {
-		}
-	}
 }
