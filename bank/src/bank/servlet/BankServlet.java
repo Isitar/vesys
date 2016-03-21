@@ -78,15 +78,14 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 				out.println("<input type=\"submit\" value=\"Withdraw\">");
 				out.println("</form></td>");
 				// transfer
-				// TODO select options
 				out.println("<td><form action=\"\" method=\"post\">");
 				out.println("<input type=\"hidden\" name=\"action\" value=\"transfer\">");
 				out.println("<input type=\"hidden\" name=\"accountNo\" value=\"" + acc.getNumber() + "\">");
 				out.println("<table><tr><td>Transfer To Acc:</td><td>");
 				out.println("<select name=\"ToAccount\">");
-				for (String accNum : accNumbers) {
-					out.println("<option value=\"" + accNum + "\">" + accNum + "</option>");
-				}
+				accNumbers.stream().filter(x -> !x.equals(a))
+						.forEach(accNum -> out.println("<option value=\"" + accNum + "\">" + accNum + "</option>"));
+
 				out.println("</select></td></tr>");
 				out.println("<tr><td>Amount</td><td><input type=\"text\" name=\"amount\"></td></tr>");
 				out.println("<tr><td colspan=\"2\"><input type=\"submit\" value=\"Transfer\"></td></tr></table>");
@@ -168,7 +167,7 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 		}
 	}
 
-	private void createAccount(HttpServletRequest request) throws IllegalArgumentException, InactiveException{
+	private void createAccount(HttpServletRequest request) throws IllegalArgumentException, InactiveException {
 		try {
 			String accNumber = bank.createAccount(getOwner(request));
 			double balance = getBalance(request);
@@ -273,9 +272,7 @@ public class BankServlet extends javax.servlet.http.HttpServlet {
 			out.println("<p>");
 			e.printStackTrace(out);
 			out.println("</p>");
-			out.println("<form action=\"\" method=\"get\">");
-			out.println("<input type=\"submit\" value=\"Back\">");
-			out.println("</form>");
+			out.println("<a href = \"/bank\">Back</a>");
 			out.println("</body></html>");
 		} catch (IOException e1) {
 		}
