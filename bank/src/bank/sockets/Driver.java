@@ -25,13 +25,13 @@ public class Driver implements bank.BankDriver {
 
 	@Override
 	public void disconnect() {
-		bank = null;
 		try {
 			bank.getSocket().close();
 		} catch (IOException e) {
 			System.err.println("could not close socket");
 			e.printStackTrace();
 		} finally {
+			bank = null;
 			System.out.println("disconnected...");
 		}
 	}
