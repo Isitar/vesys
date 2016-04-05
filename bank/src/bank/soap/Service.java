@@ -1,8 +1,6 @@
 package bank.soap;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.jws.WebMethod;
@@ -18,8 +16,8 @@ public interface Service {
 	@WebMethod
 	Set<String> getAccountNumbers() throws IOException;
 
-	// @WebMethod
-	// Map<String, bank.soap.ProxyAccount> getAccounts() throws IOException;
+	@WebMethod
+	boolean AccountExists(@WebParam(name = "number") String number) throws IOException;
 
 	@WebMethod
 	String createAccount(@WebParam(name = "owner") String owner) throws IOException;
@@ -41,5 +39,8 @@ public interface Service {
 
 	@WebMethod
 	boolean isActive(@WebParam(name = "number") String number) throws IOException;
+
+	@WebMethod
+	double getBalance(@WebParam(name = "number") String number) throws IOException;
 
 }

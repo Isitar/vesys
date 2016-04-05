@@ -59,7 +59,8 @@ public class Driver implements bank.BankDriver {
 		@Override
 		public boolean closeAccount(String number) {
 			Account acc = accounts.get(number);
-			if (acc.isActive() && acc.getBalance() == 0 && !(acc == null)) {
+
+			if (acc.isActive() && (acc.getBalance() == 0) && !(acc == null)) {
 				acc.setActive(false);
 				return true; // account is closed
 			} else {

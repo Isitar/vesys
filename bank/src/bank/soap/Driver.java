@@ -12,9 +12,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.sun.corba.se.impl.orbutil.GetPropertyAction;
+
 import bank.InactiveException;
 import bank.OverdrawException;
 import bank.soap.client.IOException_Exception;
+import bank.soap.client.InactiveException_Exception;
+import bank.soap.client.OverdrawException_Exception;
 import bank.soap.client.ServiceImplService;
 
 public class Driver implements bank.BankDriver {
@@ -42,33 +46,32 @@ public class Driver implements bank.BankDriver {
 		private Map<String, Account> getAccounts() {
 			HashMap<String, Account> accounts = new HashMap<String, Account>();
 			getAccountNumbers().forEach(n -> {
-				accounts.put(n, new Account("")); // get owner via SOAP
+				accounts.put(n, new Account(n)); // get owner via SOAP
 			});
 			return accounts;
 		}
 
 		@Override
 		public Set<String> getAccountNumbers() {
-			ServiceImplService serv = new ServiceImplService();
-			bank.soap.client.ServiceImpl port = serv.getServiceImplPort();
 			try {
-				return port.getAccountNumbers().stream().collect(Collectors.toSet());
+				return Connector.getPort().getAccountNumbers().stream().collect(Collectors.toSet());
 			} catch (IOException_Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				return null;
 			}
 		}
 
 		@Override
 		public String createAccount(String owner) {
-			Account account = new Account(owner);
-			// call to SOAP
-			return "";
+			try {
+				return Connector.getPort().createAccount(owner);
+			} catch (IOException_Exception e) {
+				return "";
+			}
 		}
 
 		@Override
 		public boolean closeAccount(String number) {
-			Account acc = getAccounts().get(number);
+			Account acc = getAccount(number);
 			if (acc.isActive() && acc.getBalance() == 0 && !(acc == null)) {
 				acc.setActive(false);
 				return true; // account is closed
@@ -79,8 +82,14 @@ public class Driver implements bank.BankDriver {
 		}
 
 		@Override
-		public bank.Account getAccount(String number) {
-			return getAccounts().get(number);
+		public Account getAccount(String number) {
+			try {
+				if (Connector.getPort().accountExists(number))
+					return new Account(number);
+			} catch (IOException_Exception e) {
+			}
+			return null;
+
 		}
 
 		@Override
@@ -103,23 +112,31 @@ public class Driver implements bank.BankDriver {
 
 	static class Account implements bank.Account {
 
-		private String number;
-		private String owner;
-
-		Account(String owner) {
-			this.owner = owner;
+		public Account(String number) {
+			this.number = number;
 		}
+
+		public Account() {
+		};
+
+		private String number;
 
 		@Override
 		public double getBalance() {
-			// call to SOAP
-			return 0;
+			try {
+				return Connector.getPort().getBalance(number);
+			} catch (IOException_Exception e) {
+				return 0;
+			}
 		}
 
 		@Override
 		public String getOwner() {
-			// call to SOAP
-			return "";
+			try {
+				return Connector.getPort().getOwner(number);
+			} catch (IOException_Exception e) {
+				return "";
+			}
 		}
 
 		@Override
@@ -129,8 +146,11 @@ public class Driver implements bank.BankDriver {
 
 		@Override
 		public boolean isActive() {
-			// call to SOAP
-			return true;
+			try {
+				return Connector.getPort().isActive(number);
+			} catch (IOException_Exception e) {
+				return false;
+			}
 		}
 
 		@Override
@@ -141,7 +161,14 @@ public class Driver implements bank.BankDriver {
 			if (amount < 0) {
 				throw new IllegalArgumentException();
 			}
-			// call to SOAP
+
+			try {
+				Connector.getPort().deposit(number, amount);
+			} catch (IOException_Exception e) {
+			} catch (InactiveException_Exception e) {
+				// is this cast really needed?
+				throw new InactiveException();
+			}
 
 		}
 
@@ -156,12 +183,23 @@ public class Driver implements bank.BankDriver {
 			if (amount < 0) {
 				throw new IllegalArgumentException();
 			}
-			// call to SOAP
+
+			try {
+				Connector.getPort().withdraw(number, amount);
+			} catch (IOException_Exception e) {
+			} catch (InactiveException_Exception e) {
+				throw new InactiveException();
+			} catch (OverdrawException_Exception e) {
+				throw new OverdrawException();
+			}
 
 		}
 
 		public void setActive(boolean active) {
-			// call to SOAP
+			try {
+				Connector.getPort().setActive(number, active);
+			} catch (IOException_Exception e) {
+			}
 		}
 
 	}

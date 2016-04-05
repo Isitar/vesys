@@ -28,16 +28,20 @@ public class ObjectFactory {
     private final static QName _CreateAccountResponse_QNAME = new QName("http://soap.bank/", "createAccountResponse");
     private final static QName _DepositResponse_QNAME = new QName("http://soap.bank/", "depositResponse");
     private final static QName _OverdrawException_QNAME = new QName("http://soap.bank/", "OverdrawException");
+    private final static QName _AccountExistsResponse_QNAME = new QName("http://soap.bank/", "AccountExistsResponse");
     private final static QName _IOException_QNAME = new QName("http://soap.bank/", "IOException");
     private final static QName _CreateAccount_QNAME = new QName("http://soap.bank/", "createAccount");
     private final static QName _IsActiveResponse_QNAME = new QName("http://soap.bank/", "isActiveResponse");
     private final static QName _GetAccountNumbersResponse_QNAME = new QName("http://soap.bank/", "getAccountNumbersResponse");
+    private final static QName _AccountExists_QNAME = new QName("http://soap.bank/", "AccountExists");
     private final static QName _GetOwner_QNAME = new QName("http://soap.bank/", "getOwner");
     private final static QName _IsActive_QNAME = new QName("http://soap.bank/", "isActive");
     private final static QName _GetOwnerResponse_QNAME = new QName("http://soap.bank/", "getOwnerResponse");
+    private final static QName _GetBalance_QNAME = new QName("http://soap.bank/", "getBalance");
     private final static QName _SetActive_QNAME = new QName("http://soap.bank/", "setActive");
     private final static QName _SetActiveResponse_QNAME = new QName("http://soap.bank/", "setActiveResponse");
     private final static QName _GetAccountNumbers_QNAME = new QName("http://soap.bank/", "getAccountNumbers");
+    private final static QName _GetBalanceResponse_QNAME = new QName("http://soap.bank/", "getBalanceResponse");
     private final static QName _Deposit_QNAME = new QName("http://soap.bank/", "deposit");
     private final static QName _Withdraw_QNAME = new QName("http://soap.bank/", "withdraw");
     private final static QName _WithdrawResponse_QNAME = new QName("http://soap.bank/", "withdrawResponse");
@@ -79,6 +83,14 @@ public class ObjectFactory {
      */
     public OverdrawException createOverdrawException() {
         return new OverdrawException();
+    }
+
+    /**
+     * Create an instance of {@link AccountExistsResponse }
+     * 
+     */
+    public AccountExistsResponse createAccountExistsResponse() {
+        return new AccountExistsResponse();
     }
 
     /**
@@ -130,11 +142,27 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link AccountExists }
+     * 
+     */
+    public AccountExists createAccountExists() {
+        return new AccountExists();
+    }
+
+    /**
      * Create an instance of {@link GetOwnerResponse }
      * 
      */
     public GetOwnerResponse createGetOwnerResponse() {
         return new GetOwnerResponse();
+    }
+
+    /**
+     * Create an instance of {@link GetBalance }
+     * 
+     */
+    public GetBalance createGetBalance() {
+        return new GetBalance();
     }
 
     /**
@@ -167,6 +195,14 @@ public class ObjectFactory {
      */
     public Deposit createDeposit() {
         return new Deposit();
+    }
+
+    /**
+     * Create an instance of {@link GetBalanceResponse }
+     * 
+     */
+    public GetBalanceResponse createGetBalanceResponse() {
+        return new GetBalanceResponse();
     }
 
     /**
@@ -222,6 +258,15 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link AccountExistsResponse }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://soap.bank/", name = "AccountExistsResponse")
+    public JAXBElement<AccountExistsResponse> createAccountExistsResponse(AccountExistsResponse value) {
+        return new JAXBElement<AccountExistsResponse>(_AccountExistsResponse_QNAME, AccountExistsResponse.class, null, value);
+    }
+
+    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link IOException }{@code >}}
      * 
      */
@@ -258,6 +303,15 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link AccountExists }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://soap.bank/", name = "AccountExists")
+    public JAXBElement<AccountExists> createAccountExists(AccountExists value) {
+        return new JAXBElement<AccountExists>(_AccountExists_QNAME, AccountExists.class, null, value);
+    }
+
+    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GetOwner }{@code >}}
      * 
      */
@@ -285,6 +339,15 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GetBalance }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://soap.bank/", name = "getBalance")
+    public JAXBElement<GetBalance> createGetBalance(GetBalance value) {
+        return new JAXBElement<GetBalance>(_GetBalance_QNAME, GetBalance.class, null, value);
+    }
+
+    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link SetActive }{@code >}}
      * 
      */
@@ -309,6 +372,15 @@ public class ObjectFactory {
     @XmlElementDecl(namespace = "http://soap.bank/", name = "getAccountNumbers")
     public JAXBElement<GetAccountNumbers> createGetAccountNumbers(GetAccountNumbers value) {
         return new JAXBElement<GetAccountNumbers>(_GetAccountNumbers_QNAME, GetAccountNumbers.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link GetBalanceResponse }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "http://soap.bank/", name = "getBalanceResponse")
+    public JAXBElement<GetBalanceResponse> createGetBalanceResponse(GetBalanceResponse value) {
+        return new JAXBElement<GetBalanceResponse>(_GetBalanceResponse_QNAME, GetBalanceResponse.class, null, value);
     }
 
     /**

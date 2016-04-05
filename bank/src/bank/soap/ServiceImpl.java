@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -22,11 +23,11 @@ public class ServiceImpl implements Service {
 	private static Bank bank;
 
 	public ServiceImpl() {
-		
+
 		Driver localDriver = new Driver();
 		localDriver.connect(new String[] { "" });
 		bank = localDriver.getBank();
-		
+
 	}
 
 	@Override
@@ -65,6 +66,16 @@ public class ServiceImpl implements Service {
 	@Override
 	public boolean isActive(String number) throws IOException {
 		return bank.getAccount(number).isActive();
+	}
+
+	@Override
+	public double getBalance(String number) throws IOException {
+		return bank.getAccount(number).getBalance();
+	}
+
+	@Override
+	public boolean AccountExists(String number) throws IOException {
+		return (bank.getAccount(number) != null);
 	}
 
 }
