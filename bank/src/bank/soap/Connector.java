@@ -1,5 +1,8 @@
 package bank.soap;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import bank.soap.client.ServiceImplService;
 
 public class Connector {
@@ -12,4 +15,7 @@ public class Connector {
 		return port;
 	}
 
+	public static void createNewInstance(String wsdlLocation) throws MalformedURLException {
+		port = new ServiceImplService(new URL(wsdlLocation)).getServiceImplPort();
+	}
 }

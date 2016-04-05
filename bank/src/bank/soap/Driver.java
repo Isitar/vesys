@@ -6,26 +6,23 @@
 package bank.soap;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.net.MalformedURLException;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import com.sun.corba.se.impl.orbutil.GetPropertyAction;
 
 import bank.InactiveException;
 import bank.OverdrawException;
 import bank.soap.client.IOException_Exception;
 import bank.soap.client.InactiveException_Exception;
 import bank.soap.client.OverdrawException_Exception;
-import bank.soap.client.ServiceImplService;
 
 public class Driver implements bank.BankDriver {
 	private Bank bank = null;
 
 	@Override
-	public void connect(String[] args) {
+	public void connect(String[] args) throws MalformedURLException {
+		if ((args.length >= 1) && (!args[0].isEmpty()))
+			Connector.createNewInstance(args[0]);
 		bank = new Bank();
 		System.out.println("connected...");
 	}
@@ -42,14 +39,6 @@ public class Driver implements bank.BankDriver {
 	}
 
 	static class Bank implements bank.Bank {
-
-		private Map<String, Account> getAccounts() {
-			HashMap<String, Account> accounts = new HashMap<String, Account>();
-			getAccountNumbers().forEach(n -> {
-				accounts.put(n, new Account(n)); // get owner via SOAP
-			});
-			return accounts;
-		}
 
 		@Override
 		public Set<String> getAccountNumbers() {

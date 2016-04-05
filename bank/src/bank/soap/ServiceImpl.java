@@ -1,16 +1,10 @@
 package bank.soap;
 
 import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import javax.jws.WebService;
 
-import bank.Account;
 import bank.Bank;
 import bank.InactiveException;
 import bank.OverdrawException;

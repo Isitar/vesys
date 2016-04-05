@@ -16,6 +16,7 @@ package bank;
  * @author Dominik Gruntz
  * @version 3.0
  */
+@SuppressWarnings("serial")
 public class OverdrawException extends Exception {
 	public OverdrawException() {
 		super();

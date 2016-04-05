@@ -99,7 +99,7 @@ public class Driver implements bank.BankDriver {
 		private Object tcpRequest(Object o, String command) throws IOException {
 			return Helper.tcpRequest(o, command, os, is);
 		}
-		
+
 		protected Socket getSocket() {
 			return s;
 		}
@@ -192,7 +192,6 @@ public class Driver implements bank.BankDriver {
 			WithdrawCommand wc = new WithdrawCommand();
 			wc.setAccountNo(this.number);
 			wc.setAmount(amount);
-			Command com = (Command) tcpRequest(wc, "withdraw");
 			balance -= amount;
 		}
 

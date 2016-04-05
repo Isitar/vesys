@@ -52,6 +52,7 @@ import bank.InactiveException;
 import bank.OverdrawException;
 import bank.gui.tests.BankTest;
 
+@SuppressWarnings("serial")
 public class BankGUI extends JFrame {
 	private BankDriver driver;
 	private Bank bank;
