@@ -1,30 +1,45 @@
 package bank.soap;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 
+import bank.InactiveException;
+import bank.OverdrawException;
+
 @WebService
 public interface Service {
-	
-	@WebMethod
-	List<String> getAccountNumbers();
 
 	@WebMethod
-	String createAccount(@WebParam(name = "owner") String owner);
-	
-	@WebMethod
-	boolean closeAccount(@WebParam(name = "number") String number);
+	Set<String> getAccountNumbers() throws IOException;
+
+	// @WebMethod
+	// Map<String, bank.soap.ProxyAccount> getAccounts() throws IOException;
 
 	@WebMethod
-	void deposit(@WebParam(name = "number") String number, @WebParam(name = "amount") double amount);
+	String createAccount(@WebParam(name = "owner") String owner) throws IOException;
 
 	@WebMethod
-	void withdraw(@WebParam(name = "number") String number, @WebParam(name = "amount") double amount);
-	
+	void deposit(@WebParam(name = "number") String number, @WebParam(name = "amount") double amount)
+			throws IllegalArgumentException, IOException, InactiveException;
+
 	@WebMethod
-	void transfer(@WebParam(name = "fromAcc") String fromAcc, @WebParam(name = "toAcc") String toAcc, @WebParam(name = "amount") double amount);
+	void withdraw(@WebParam(name = "number") String number, @WebParam(name = "amount") double amount)
+			throws IllegalArgumentException, IOException, OverdrawException, InactiveException;
+
+	@WebMethod
+	boolean setActive(@WebParam(name = "number") String number, @WebParam(name = "active") boolean active)
+			throws IOException;
+
+	@WebMethod
+	String getOwner(@WebParam(name = "number") String number) throws IOException;
+
+	@WebMethod
+	boolean isActive(@WebParam(name = "number") String number) throws IOException;
 
 }

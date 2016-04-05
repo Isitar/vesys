@@ -10,9 +10,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import bank.InactiveException;
 import bank.OverdrawException;
+import bank.soap.client.IOException_Exception;
+import bank.soap.client.ServiceImplService;
 
 public class Driver implements bank.BankDriver {
 	private Bank bank = null;
@@ -37,18 +40,23 @@ public class Driver implements bank.BankDriver {
 	static class Bank implements bank.Bank {
 
 		private Map<String, Account> getAccounts() {
-			return new HashMap<String, Account>();
-		} // todo soap call
+			HashMap<String, Account> accounts = new HashMap<String, Account>();
+			getAccountNumbers().forEach(n -> {
+				accounts.put(n, new Account("")); // get owner via SOAP
+			});
+			return accounts;
+		}
 
 		@Override
 		public Set<String> getAccountNumbers() {
-			HashSet<String> accountNumbers = new HashSet<String>();
-			getAccounts().values().forEach(a -> {
-				if (a.isActive()) {
-					accountNumbers.add(a.getNumber());
-				}
-			});
-			return accountNumbers;
+			ServiceImplService serv = new ServiceImplService();
+			bank.soap.client.ServiceImpl port = serv.getServiceImplPort();
+			try {
+				return port.getAccountNumbers().stream().collect(Collectors.toSet());
+			} catch (IOException_Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 
 		@Override
