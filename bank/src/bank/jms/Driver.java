@@ -7,7 +7,9 @@ package bank.jms;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -16,6 +18,7 @@ import javax.jms.JMSContext;
 import javax.jms.JMSProducer;
 import javax.jms.Queue;
 import javax.jms.TemporaryQueue;
+import javax.naming.NamingException;
 
 import bank.InactiveException;
 import bank.OverdrawException;
@@ -45,30 +48,47 @@ public class Driver implements bank.BankDriver {
 
 	static class Bank implements bank.Bank {
 
+		private String CallService(CommandType c, String Args) {
+			try {
+
+				Queue queue = Connector.getQueue();
+				try (JMSContext context = Connector.getFactory().createContext()) {
+					TemporaryQueue tempQueue = context.createTemporaryQueue();
+
+					JMSProducer sender = context.createProducer().setJMSReplyTo(tempQueue);
+					JMSConsumer receiver = context.createConsumer(tempQueue);
+
+					if (Args == null || Args == "") {
+						sender.send(queue, c);
+					} else {
+						sender.send(queue, c + ";" + Args);
+					}
+					String res = receiver.receiveBody(String.class);
+					return res;
+				}
+			} catch (Exception e) {
+
+			}
+		}
+
 		@Override
 		public Set<String> getAccountNumbers() {
-			Queue queue = Connector.getQueue();
-			try (JMSContext context = Connector.getFactory().createContext()) {
-				TemporaryQueue tempQueue = context.createTemporaryQueue();
-
-				JMSProducer sender = context.createProducer().setJMSReplyTo(tempQueue);
-				JMSConsumer receiver = context.createConsumer(tempQueue);
-
-				sender.send(queue, CommandType.getAccountNumbers);
-
-				String res = receiver.receiveBody(String.class);
-				System.out.println(res);
-			} catch (Exception e) {
+			String[] accNumbers = CallService(CommandType.getAccountNumbers, "").split(";");
+			if (ReturnType.values()[Integer.parseInt(accNumbers[0])] == ReturnType.Error) {
+				// no exception Handling
+				return null;
 			}
-
+			return new HashSet<String>(Arrays.asList(accNumbers).stream().skip(1).collect(Collectors.toList()));
 		}
 
 		@Override
 		public String createAccount(String owner) {
-			try {
-				return Connector.getPort().createAccount(owner);
-			} catch (IOException_Exception e) {
-				return "";
+			String[] retVal = CallService(CommandType.createAccount, owner).split(";");
+			if (ReturnType.values()[Integer.parseInt(retVal[0])] == ReturnType.Error) {
+				// no exception Handling
+				return null;
+			} else {
+				return retVal[1];
 			}
 		}
 
