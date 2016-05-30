@@ -21,12 +21,27 @@ public class Connector {
 	public static Queue getQueue() {
 		if (queue == null) {
 			try {
-				jndiContext = new InitialContext();
-				factory = (ConnectionFactory) jndiContext.lookup("ConnectionFactory");
-				queue = (Queue) jndiContext.lookup("/queue/BANK");
+				queue = (Queue) getContext().lookup("/queue/BANK");
 			} catch (Exception e) {
 			}
 		}
 		return queue;
+	}
+
+	public static Context getContext() {
+		if (jndiContext == null) {
+			try {
+				jndiContext = new InitialContext();
+			} catch (Exception e) {
+			}
+		}
+		return jndiContext;
+	}
+
+	public static ConnectionFactory getFactory() throws NamingException {
+		if (factory == null) {
+			factory = (ConnectionFactory) getContext().lookup("ConnectionFactory");
+		}
+		return factory;
 	}
 }

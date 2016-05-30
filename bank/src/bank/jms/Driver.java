@@ -7,8 +7,15 @@ package bank.jms;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.Date;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import javax.jms.JMSConsumer;
+import javax.jms.JMSContext;
+import javax.jms.JMSProducer;
+import javax.jms.Queue;
+import javax.jms.TemporaryQueue;
 
 import bank.InactiveException;
 import bank.OverdrawException;
@@ -21,8 +28,6 @@ public class Driver implements bank.BankDriver {
 
 	@Override
 	public void connect(String[] args) throws MalformedURLException {
-		if ((args.length >= 1) && (!args[0].isEmpty()))
-			Connector.createNewInstance(args[0]);
 		bank = new Bank();
 		System.out.println("connected...");
 	}
@@ -42,11 +47,20 @@ public class Driver implements bank.BankDriver {
 
 		@Override
 		public Set<String> getAccountNumbers() {
-			try {
-				return Connector.getPort().getAccountNumbers().stream().collect(Collectors.toSet());
-			} catch (IOException_Exception e) {
-				return null;
+			Queue queue = Connector.getQueue();
+			try (JMSContext context = Connector.getFactory().createContext()) {
+				TemporaryQueue tempQueue = context.createTemporaryQueue();
+
+				JMSProducer sender = context.createProducer().setJMSReplyTo(tempQueue);
+				JMSConsumer receiver = context.createConsumer(tempQueue);
+
+				sender.send(queue, CommandType.getAccountNumbers);
+
+				String res = receiver.receiveBody(String.class);
+				System.out.println(res);
+			} catch (Exception e) {
 			}
+
 		}
 
 		@Override
