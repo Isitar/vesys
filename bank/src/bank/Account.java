@@ -92,6 +92,6 @@ public interface Account {
 	 *             if a remoting or communication problem occurs
 	 */
 	double getBalance() throws IOException;
-	
+
 	void setActive(boolean active) throws IOException;
 }

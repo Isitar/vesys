@@ -44,4 +44,28 @@ public class Connector {
 		}
 		return factory;
 	}
+
+	public static String CallService(CommandType c, String Args) {
+		try {
+
+			Queue queue = Connector.getQueue();
+			try (JMSContext context = Connector.getFactory().createContext()) {
+				TemporaryQueue tempQueue = context.createTemporaryQueue();
+
+				JMSProducer sender = context.createProducer().setJMSReplyTo(tempQueue);
+				JMSConsumer receiver = context.createConsumer(tempQueue);
+
+				if (Args == null || Args == "") {
+					sender.send(queue, c);
+				} else {
+					sender.send(queue, c + ";" + Args);
+				}
+				String res = receiver.receiveBody(String.class);
+				return res;
+			}
+		} catch (Exception e) {
+			return "";
+		}
+	}
+
 }

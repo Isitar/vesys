@@ -48,32 +48,10 @@ public class Driver implements bank.BankDriver {
 
 	static class Bank implements bank.Bank {
 
-		private String CallService(CommandType c, String Args) {
-			try {
-
-				Queue queue = Connector.getQueue();
-				try (JMSContext context = Connector.getFactory().createContext()) {
-					TemporaryQueue tempQueue = context.createTemporaryQueue();
-
-					JMSProducer sender = context.createProducer().setJMSReplyTo(tempQueue);
-					JMSConsumer receiver = context.createConsumer(tempQueue);
-
-					if (Args == null || Args == "") {
-						sender.send(queue, c);
-					} else {
-						sender.send(queue, c + ";" + Args);
-					}
-					String res = receiver.receiveBody(String.class);
-					return res;
-				}
-			} catch (Exception e) {
-
-			}
-		}
-
 		@Override
 		public Set<String> getAccountNumbers() {
-			String[] accNumbers = CallService(CommandType.getAccountNumbers, "").split(";");
+			String[] accNumbers = Connector.CallService(CommandType.getAccountNumbers, "").split(";");
+
 			if (ReturnType.values()[Integer.parseInt(accNumbers[0])] == ReturnType.Error) {
 				// no exception Handling
 				return null;
@@ -83,7 +61,7 @@ public class Driver implements bank.BankDriver {
 
 		@Override
 		public String createAccount(String owner) {
-			String[] retVal = CallService(CommandType.createAccount, owner).split(";");
+			String[] retVal = Connector.CallService(CommandType.createAccount, owner).split(";");
 			if (ReturnType.values()[Integer.parseInt(retVal[0])] == ReturnType.Error) {
 				// no exception Handling
 				return null;
@@ -96,21 +74,18 @@ public class Driver implements bank.BankDriver {
 		public boolean closeAccount(String number) {
 			Account acc = getAccount(number);
 			if (acc.isActive() && acc.getBalance() == 0 && !(acc == null)) {
-				acc.setActive(false);
+				acc.inactivate();
 				return true; // account is closed
 			}
-
 			return false; // account is not closed
-
 		}
 
 		@Override
 		public Account getAccount(String number) {
-			try {
-				if (Connector.getPort().accountExists(number))
-					return new Account(number);
-			} catch (IOException_Exception e) {
-			}
+			if (ReturnType.values()[Integer.parseInt(
+					Connector.CallService(CommandType.getAccount, number).split(";")[0])] == ReturnType.Answer)
+				return new Account(number);
+
 			return null;
 
 		}
@@ -127,8 +102,7 @@ public class Driver implements bank.BankDriver {
 			if (amount < 0) {
 				throw new IllegalArgumentException();
 			}
-			from.withdraw(amount);
-			to.deposit(amount);
+			Connector.CallService(CommandType.transfer, from.getNumber() + ";" + to.getNumber() + ";" + amount);
 		}
 
 	}
@@ -146,20 +120,22 @@ public class Driver implements bank.BankDriver {
 
 		@Override
 		public double getBalance() {
-			try {
-				return Connector.getPort().getBalance(number);
-			} catch (IOException_Exception e) {
+			ReturnType rt;
+			String[] returnVals = Connector.CallService(CommandType.getBalance, number).split(";");
+			if (ReturnType.values()[Integer.parseInt(returnVals[0])] == ReturnType.Answer)
+				return Double.parseDouble(returnVals[1]);
+			else
 				return 0;
-			}
+
 		}
 
 		@Override
 		public String getOwner() {
-			try {
-				return Connector.getPort().getOwner(number);
-			} catch (IOException_Exception e) {
+			String[] returnVals = Connector.CallService(CommandType.getOwner, number).split(";");
+			if (ReturnType.values()[Integer.parseInt(returnVals[0])] == ReturnType.Answer)
+				return returnVals[1];
+			else
 				return "";
-			}
 		}
 
 		@Override
@@ -169,11 +145,11 @@ public class Driver implements bank.BankDriver {
 
 		@Override
 		public boolean isActive() {
-			try {
-				return Connector.getPort().isActive(number);
-			} catch (IOException_Exception e) {
+			String[] returnVals = Connector.CallService(CommandType.isActive, number).split(";");
+			if (ReturnType.values()[Integer.parseInt(returnVals[0])] == ReturnType.Answer)
+				return Boolean.parseBoolean(returnVals[1]);
+			else
 				return false;
-			}
 		}
 
 		@Override
@@ -185,14 +161,7 @@ public class Driver implements bank.BankDriver {
 				throw new IllegalArgumentException();
 			}
 
-			try {
-				Connector.getPort().deposit(number, amount);
-			} catch (IOException_Exception e) {
-			} catch (InactiveException_Exception e) {
-				// is this cast really needed?
-				throw new InactiveException();
-			}
-
+			String[] returnVals = Connector.CallService(CommandType.deposit, number + ";" + amount).split(";");
 		}
 
 		@Override
@@ -207,22 +176,19 @@ public class Driver implements bank.BankDriver {
 				throw new IllegalArgumentException();
 			}
 
-			try {
-				Connector.getPort().withdraw(number, amount);
-			} catch (IOException_Exception e) {
-			} catch (InactiveException_Exception e) {
-				throw new InactiveException();
-			} catch (OverdrawException_Exception e) {
-				throw new OverdrawException();
-			}
+			Connector.CallService(CommandType.withdraw, number + ";" + amount);
 
 		}
 
-		public void setActive(boolean active) {
-			try {
-				Connector.getPort().setActive(number, active);
-			} catch (IOException_Exception e) {
-			}
+		public void inactivate() {
+			Connector.CallService(CommandType.incativate, number);
+		}
+
+		
+		// needed for another project but not here.
+		@Override
+		public void setActive(boolean active) throws IOException {
+
 		}
 
 	}
