@@ -8,23 +8,12 @@ package bank.jms;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.jms.JMSConsumer;
-import javax.jms.JMSContext;
-import javax.jms.JMSProducer;
-import javax.jms.Queue;
-import javax.jms.TemporaryQueue;
-import javax.naming.NamingException;
-
 import bank.InactiveException;
 import bank.OverdrawException;
-import bank.soap.client.IOException_Exception;
-import bank.soap.client.InactiveException_Exception;
-import bank.soap.client.OverdrawException_Exception;
 
 public class Driver implements bank.BankDriver {
 	private Bank bank = null;
@@ -52,7 +41,7 @@ public class Driver implements bank.BankDriver {
 		public Set<String> getAccountNumbers() {
 			String[] accNumbers = Connector.CallService(CommandType.getAccountNumbers, "").split(";");
 
-			if (ReturnType.values()[Integer.parseInt(accNumbers[0])] == ReturnType.Error) {
+			if (ReturnType.values()[Integer.parseInt(accNumbers[0])] != ReturnType.Successful) {
 				// no exception Handling
 				return null;
 			}
@@ -62,7 +51,7 @@ public class Driver implements bank.BankDriver {
 		@Override
 		public String createAccount(String owner) {
 			String[] retVal = Connector.CallService(CommandType.createAccount, owner).split(";");
-			if (ReturnType.values()[Integer.parseInt(retVal[0])] == ReturnType.Error) {
+			if (ReturnType.values()[Integer.parseInt(retVal[0])] != ReturnType.Successful) {
 				// no exception Handling
 				return null;
 			} else {
@@ -83,7 +72,7 @@ public class Driver implements bank.BankDriver {
 		@Override
 		public Account getAccount(String number) {
 			if (ReturnType.values()[Integer.parseInt(
-					Connector.CallService(CommandType.getAccount, number).split(";")[0])] == ReturnType.Answer)
+					Connector.CallService(CommandType.getAccount, number).split(";")[0])] == ReturnType.Successful)
 				return new Account(number);
 
 			return null;
@@ -122,7 +111,7 @@ public class Driver implements bank.BankDriver {
 		public double getBalance() {
 			ReturnType rt;
 			String[] returnVals = Connector.CallService(CommandType.getBalance, number).split(";");
-			if (ReturnType.values()[Integer.parseInt(returnVals[0])] == ReturnType.Answer)
+			if (ReturnType.values()[Integer.parseInt(returnVals[0])] == ReturnType.Successful)
 				return Double.parseDouble(returnVals[1]);
 			else
 				return 0;
@@ -132,7 +121,7 @@ public class Driver implements bank.BankDriver {
 		@Override
 		public String getOwner() {
 			String[] returnVals = Connector.CallService(CommandType.getOwner, number).split(";");
-			if (ReturnType.values()[Integer.parseInt(returnVals[0])] == ReturnType.Answer)
+			if (ReturnType.values()[Integer.parseInt(returnVals[0])] == ReturnType.Successful)
 				return returnVals[1];
 			else
 				return "";
@@ -146,7 +135,7 @@ public class Driver implements bank.BankDriver {
 		@Override
 		public boolean isActive() {
 			String[] returnVals = Connector.CallService(CommandType.isActive, number).split(";");
-			if (ReturnType.values()[Integer.parseInt(returnVals[0])] == ReturnType.Answer)
+			if (ReturnType.values()[Integer.parseInt(returnVals[0])] == ReturnType.Successful)
 				return Boolean.parseBoolean(returnVals[1]);
 			else
 				return false;
@@ -181,7 +170,7 @@ public class Driver implements bank.BankDriver {
 		}
 
 		public void inactivate() {
-			Connector.CallService(CommandType.incativate, number);
+			Connector.CallService(CommandType.inactivate, number);
 		}
 
 		

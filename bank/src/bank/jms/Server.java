@@ -1,6 +1,5 @@
 package bank.jms;
 
-import java.io.IOException;
 import java.util.Set;
 
 import javax.jms.ConnectionFactory;
@@ -9,13 +8,11 @@ import javax.jms.JMSContext;
 import javax.jms.JMSProducer;
 import javax.jms.Message;
 import javax.jms.Queue;
-import javax.jws.WebService;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 
+import bank.Account;
 import bank.Bank;
-import bank.InactiveException;
-import bank.OverdrawException;
 import bank.local.Driver;
 
 public class Server {
@@ -24,10 +21,16 @@ public class Server {
 	private static Bank bank;
 
 	public static void main(String[] args) throws Exception {
-		Context jndiContext = new InitialContext();
 
+		// JMS related initialization
+		Context jndiContext = new InitialContext();
 		ConnectionFactory factory = (ConnectionFactory) jndiContext.lookup("ConnectionFactory");
 		Queue queue = (Queue) jndiContext.lookup("/queue/BANK");
+
+		// Bank related initialization
+		Driver localDriver = new Driver();
+		localDriver.connect(new String[] { "" });
+		bank = localDriver.getBank();
 
 		try (JMSContext context = factory.createContext()) {
 			JMSConsumer consumer = context.createConsumer(queue);
@@ -36,11 +39,90 @@ public class Server {
 			System.out.println("Bank server is running...");
 			while (true) {
 				Message request = consumer.receive();
+
 				// Handle request
+				String message = request.getBody(String.class);
+				String[] arguments = message.split(";");
+				CommandType ct = CommandType.values()[Integer.parseInt(arguments[0])];
+				StringBuilder sb = new StringBuilder();
+				switch (ct) {
+					case getAccountNumbers:
+						Set<String> accountNumbers = bank.getAccountNumbers();
+						sb.append(ReturnType.Successful);
+						for (String accNum : accountNumbers) {
+							sb.append(';');
+							sb.append(accNum);
+						}
+						// produces 0;accNum1;accNum2;...
+						break;
+					case createAccount:
+						String number = bank.createAccount(arguments[1]);
+						sb.append(ReturnType.Successful);
+						sb.append(';');
+						sb.append(number);
+						// produces 0;number
+						break;
+					case closeAccount:
+						boolean accountClosed = bank.closeAccount(arguments[1]);
+						sb.append(ReturnType.Successful);
+						sb.append(';');
+						sb.append(accountClosed);
+						// produces 0;true on successful close
+						break;
+					case getAccount:
+						// TODO do we need this? should return an Account-Object, that's not "stringifiable"
+						break;
+					case transfer:
+						Account from = bank.getAccount(arguments[1]);
+						Account to = bank.getAccount(arguments[2]);
+						double amount = Double.parseDouble(arguments[3]);
+						bank.transfer(from, to, amount);
+						sb.append(ReturnType.Successful);
+						break;
+					case deposit:
+						bank.getAccount(arguments[1]).deposit(Double.parseDouble(arguments[2]));
+						sb.append(ReturnType.Successful);
+						// produces 0 on success
+						break;
+					case withdraw:
+						bank.getAccount(arguments[1]).withdraw(Double.parseDouble(arguments[2]));
+						sb.append(ReturnType.Successful);
+						// produces 0 on success
+						break;
+					case getBalance:
+						double balance = bank.getAccount(arguments[1]).getBalance();
+						sb.append(ReturnType.Successful);
+						sb.append(';');
+						sb.append(balance);
+						// produces 0;123.0 for example
+						break;
+					case getOwner:
+						String owner = bank.getAccount(arguments[1]).getOwner();
+						sb.append(ReturnType.Successful);
+						sb.append(';');
+						sb.append(owner);
+						// produces 0;owner
+						break;
+					case isActive:
+						boolean isActive = bank.getAccount(arguments[1]).isActive();
+						sb.append(ReturnType.Successful);
+						sb.append(';');
+						sb.append(isActive);
+						// produces 0;true if active
+						break;
+					case inactivate:
+						bank.getAccount(arguments[1]).setActive(false);
+						sb.append(ReturnType.Successful);
+						// produces 0 on success
+						break;
+				}
+
+				String returnMessage = sb.toString();
 
 				// send back
-				sender.send(request.getJMSReplyTo(), request.getBody(String.class));
+				sender.send(request.getJMSReplyTo(), returnMessage);
 			}
 		}
 	}
+
 }

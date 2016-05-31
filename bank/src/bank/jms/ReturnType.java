@@ -1,5 +1,9 @@
 package bank.jms;
 
 public enum ReturnType {
-	Answer, Error
+	Successful,
+	IllegalArgumentException,
+	IOException,
+	InactiveException,
+	OverdrawException
 }

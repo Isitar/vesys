@@ -1,5 +1,15 @@
 package bank.jms;
 
 public enum CommandType {
-	getAccountNumbers, createAccount, closeAccount, getAccount, transfer, deposit, withdraw, getBalance, getOwner, isActive, incativate
+	getAccountNumbers,
+	createAccount,
+	closeAccount,
+	getAccount,
+	transfer,
+	deposit,
+	withdraw,
+	getBalance,
+	getOwner,
+	isActive,
+	inactivate
 }
