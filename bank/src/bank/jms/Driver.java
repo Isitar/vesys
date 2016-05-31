@@ -6,7 +6,10 @@
 package bank.jms;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -45,11 +48,19 @@ public class Driver implements bank.BankDriver {
 				// no exception Handling
 				return null;
 			}
-			return new HashSet<String>(Arrays.asList(accNumbers).stream().skip(1).collect(Collectors.toList()));
+			if (accNumbers.length == 1) {
+				return new HashSet<String>();
+			} else {
+				return new HashSet<String>(Arrays.asList(accNumbers).stream().skip(1).collect(Collectors.toList()));
+			}
 		}
 
+		@SuppressWarnings("deprecation")
 		@Override
 		public String createAccount(String owner) {
+			System.out.println("Creating Account: " + owner);
+			owner = URLEncoder.encode(owner);
+
 			String[] retVal = Connector.CallService(CommandType.createAccount, owner).split(";");
 			if (ReturnType.values()[Integer.parseInt(retVal[0])] != ReturnType.Successful) {
 				// no exception Handling
@@ -82,7 +93,7 @@ public class Driver implements bank.BankDriver {
 		@Override
 		public void transfer(bank.Account from, bank.Account to, double amount)
 				throws IOException, InactiveException, OverdrawException, IllegalArgumentException {
-			if (!from.isActive() || !to.isActive()) {
+			if (!(from.isActive() && to.isActive())) {
 				throw new InactiveException();
 			}
 			if (amount > from.getBalance()) {
@@ -118,11 +129,15 @@ public class Driver implements bank.BankDriver {
 
 		}
 
+		@SuppressWarnings("deprecation")
 		@Override
 		public String getOwner() {
 			String[] returnVals = Connector.CallService(CommandType.getOwner, number).split(";");
 			if (ReturnType.values()[Integer.parseInt(returnVals[0])] == ReturnType.Successful)
-				return returnVals[1];
+				return URLDecoder.decode(returnVals[1]);
+			// System.out.println("Converted owner to: " + owner);
+			// return owner;
+
 			else
 				return "";
 		}
@@ -173,7 +188,6 @@ public class Driver implements bank.BankDriver {
 			Connector.CallService(CommandType.inactivate, number);
 		}
 
-		
 		// needed for another project but not here.
 		@Override
 		public void setActive(boolean active) throws IOException {

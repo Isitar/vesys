@@ -11,5 +11,6 @@ public enum CommandType {
 	getBalance,
 	getOwner,
 	isActive,
-	inactivate
+	inactivate,
+	skip
 }

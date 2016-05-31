@@ -2,6 +2,10 @@ package bank.jms;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
+import java.util.Arrays;
 
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSConsumer;
@@ -55,12 +59,20 @@ public class Connector {
 				JMSProducer sender = context.createProducer().setJMSReplyTo(tempQueue);
 				JMSConsumer receiver = context.createConsumer(tempQueue);
 
+				// Convert to utf-8 for queue
+
+				ByteBuffer bf = Charset.forName("UTF-8").encode(Args);
+				String convertedArgs = new String(bf.array());
+
 				if (Args == null || Args == "") {
-					sender.send(queue, c);
+					sender.send(queue, c.ordinal() + "");
 				} else {
-					sender.send(queue, c + ";" + Args);
+					sender.send(queue, c.ordinal() + ";" + convertedArgs);
 				}
-				String res = receiver.receiveBody(String.class);
+				byte[] by = receiver.receiveBody(String.class).getBytes();
+				String res = new String(by, "UTF-8");
+
+				res = res.replace("%00", "");
 				return res;
 			}
 		} catch (Exception e) {
