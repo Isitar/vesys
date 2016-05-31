@@ -6,7 +6,6 @@
 package bank.jms;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -18,7 +17,12 @@ import java.util.stream.Collectors;
 import bank.InactiveException;
 import bank.OverdrawException;
 
-public class Driver implements bank.BankDriver {
+import javax.jms.*;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
+public class Driver implements bank.BankDriver2 {
 	private Bank bank = null;
 
 	@Override
@@ -36,6 +40,27 @@ public class Driver implements bank.BankDriver {
 	@Override
 	public Bank getBank() {
 		return bank;
+	}
+
+	@Override
+	public void registerUpdateHandler(UpdateHandler handler) throws IOException {
+		/*
+		try {
+			Context jndiContext = new InitialContext();
+			ConnectionFactory factory = (ConnectionFactory) jndiContext.lookup("ConnectionFactory");
+			Topic topic = (Topic) jndiContext.lookup("/topic/BANK_LISTENER");
+
+			JMSContext context = factory.createContext();
+			JMSConsumer listener = context.createConsumer(topic);
+
+			while (true) {
+				String accountNumber = listener.receive().toString();
+				handler.accountChanged(accountNumber);
+			}
+
+		} catch (NamingException e) {
+		}
+		*/
 	}
 
 	static class Bank implements bank.Bank {

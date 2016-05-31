@@ -1,16 +1,10 @@
 package bank.jms;
 
-import java.io.IOException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Set;
 
-import javax.jms.ConnectionFactory;
-import javax.jms.JMSConsumer;
-import javax.jms.JMSContext;
-import javax.jms.JMSProducer;
-import javax.jms.Message;
-import javax.jms.Queue;
+import javax.jms.*;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 
@@ -29,6 +23,11 @@ public class Server {
 		Context jndiContext = new InitialContext();
 		ConnectionFactory factory = (ConnectionFactory) jndiContext.lookup("ConnectionFactory");
 		Queue queue = (Queue) jndiContext.lookup("/queue/BANK");
+
+
+		// JMS topic initialization
+		Topic topic = (Topic) jndiContext.lookup("/topic/BANK_LISTENER");
+
 
 		// Bank related initialization
 		Driver localDriver = new Driver();
@@ -72,6 +71,7 @@ public class Server {
 					sb.append(';');
 					sb.append(number);
 					// produces 0;number
+					sender.send(topic, number); // notify listeners
 					break;
 				case closeAccount:
 					boolean accountClosed = bank.closeAccount(arguments[1]);
@@ -79,6 +79,7 @@ public class Server {
 					sb.append(';');
 					sb.append(accountClosed);
 					// produces 0;true on successful close
+					sender.send(topic, arguments[1]); // notify listeners
 					break;
 				case getAccount:
 					if (arguments.length < 2) {
@@ -98,16 +99,20 @@ public class Server {
 					double amount = Double.parseDouble(arguments[3]);
 					bank.transfer(from, to, amount);
 					sb.append(ReturnType.Successful.ordinal());
+					sender.send(topic, arguments[1]); // notify listeners about "from" account
+					sender.send(topic, arguments[2]); // notify listeners about "to" account
 					break;
 				case deposit:
 					bank.getAccount(arguments[1]).deposit(Double.parseDouble(arguments[2]));
 					sb.append(ReturnType.Successful.ordinal());
 					// produces 0 on success
+					sender.send(topic, arguments[1]); // notify listeners
 					break;
 				case withdraw:
 					bank.getAccount(arguments[1]).withdraw(Double.parseDouble(arguments[2]));
 					sb.append(ReturnType.Successful.ordinal());
 					// produces 0 on success
+					sender.send(topic, arguments[1]); // notify listeners
 					break;
 				case getBalance:
 					double balance = bank.getAccount(arguments[1]).getBalance();
@@ -134,6 +139,7 @@ public class Server {
 					bank.getAccount(arguments[1]).setActive(false);
 					sb.append(ReturnType.Successful.ordinal());
 					// produces 0 on success
+					sender.send(topic, arguments[1]); // notify listeners
 					break;
 				}
 
@@ -144,5 +150,4 @@ public class Server {
 			}
 		}
 	}
-
 }
