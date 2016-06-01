@@ -26,7 +26,7 @@ public class Server {
 
 
 		// JMS topic initialization
-		Topic topic = (Topic) jndiContext.lookup("/topic/BANK_LISTENER");
+		Topic topic = (Topic) jndiContext.lookup("/topic/BANK");
 
 
 		// Bank related initialization

@@ -44,23 +44,25 @@ public class Driver implements bank.BankDriver2 {
 
 	@Override
 	public void registerUpdateHandler(UpdateHandler handler) throws IOException {
-		/*
 		try {
 			Context jndiContext = new InitialContext();
 			ConnectionFactory factory = (ConnectionFactory) jndiContext.lookup("ConnectionFactory");
-			Topic topic = (Topic) jndiContext.lookup("/topic/BANK_LISTENER");
+			Topic topic = (Topic) jndiContext.lookup("/topic/BANK");
 
 			JMSContext context = factory.createContext();
 			JMSConsumer listener = context.createConsumer(topic);
-
-			while (true) {
-				String accountNumber = listener.receive().toString();
-				handler.accountChanged(accountNumber);
-			}
+			listener.setMessageListener(new MessageListener() {
+				@Override
+				public void onMessage(Message message) {
+					try {
+						handler.accountChanged(message.toString());
+					} catch (IOException e) {
+					}
+				}
+			});
 
 		} catch (NamingException e) {
 		}
-		*/
 	}
 
 	static class Bank implements bank.Bank {
